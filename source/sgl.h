@@ -26,43 +26,73 @@
 #ifndef __SGL_H__
 #define __SGL_H__
 
-
-#include "string.h"
 #include "./core/sgl_core.h"
+#include "./core/sgl_device.h"
+#include "./core/sgl_event.h"
+#include "./core/sgl_log.h"
+#include "./core/sgl_obj.h"
+#include "./core/sgl_page.h"
+#include "./core/sgl_task.h"
+#include "./core/sgl_anim.h"
+#include "./libs/sgl_mem.h"
+#include "./libs/sgl_math.h"
+#include "./libs/sgl_string.h"
 #include "./fonts/sgl_font.h"
 #include "./widget/sgl_button.h"
 #include "./widget/sgl_label.h"
 #include "./widget/sgl_switch.h"
-#include "./widget/sgl_battery.h"
+#include "./widget/sgl_arcbar.h"
+#include "./widget/sgl_pgsbar.h"
 #include "./widget/sgl_checkbox.h"
 #include "./widget/sgl_radiobtn.h"
-#include "./widget/sgl_number.h"
-#include "./widget/sgl_pgsbar.h"
-#include "./widget/sgl_arcbar.h"
-#include "./widget/sgl_pixmap.h"
+#include "./widget/sgl_object.h"
 
 
-// prototype: sgl_rgb(uint8_t r, uint8_t g, uint8_t b)
-#if (SGL_CONFIG_PANEL_PIXEL_DEPTH == 32 || SGL_CONFIG_PANEL_PIXEL_DEPTH == 24)
-#define sgl_rgb(r,g,b)          (sgl_color_t){.blue=(b), .green=(g), .red=(r),}
-#elif (SGL_CONFIG_PANEL_PIXEL_DEPTH == 16)
-#if SGL_CONFIG_COLOR16_SWAP                   
-#define sgl_rgb(r,g,b)          (sgl_color_t){.green_h = (g >>2) >> 3, .red = (r) >> 3, .blue = (b) >> 3, .green_l = (g >>2) & 0x7,}
-#else
-#define sgl_rgb(r,g,b)          (sgl_color_t){.blue=(b) >> 3, .green=(g) >> 2, .red=(r) >> 3,}
-#endif
-#else
-//define sgl_rgb macro for other color type
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#define SGL_RED              sgl_rgb(0xFF, 0, 0)
-#define SGL_GREEN            sgl_rgb(0, 0xFF, 0)
-#define SGL_BLUE             sgl_rgb(0, 0, 0xFF)
-#define SGL_WHITE            sgl_rgb(0xFF, 0xFF, 0xFF)
-#define SGL_BLACK            sgl_rgb(0, 0, 0)
+/**
+* @brief The initialization function of sgl, which users must call when writing 
+*        their own projects, is used to initialize the data structure of sgl
+*
+* @param none
+*
+* @return int  0: OK,  Non 0: Error
+*/
+static inline int sgl_init(void)
+{
+    sgl_mem_init();
+    //TODO: other initialize
+    return 0;
+}
 
-#ifndef SGL_SRCACT_BACKGROUND_COLOR
-#define SGL_SRCACT_BACKGROUND_COLOR    (SGL_WHITE)
+
+/**
+ * @brief The core task of SGL is to handle rectangles, which handle event response, 
+ *        all dirty page redraws, and page switching
+ * 
+ * @param none
+ * 
+ * @return none
+*/
+static inline void sgl_task_handler(void)
+{
+    sgl_event_handler();
+    sgl_active_page_dirty_handler();
+    sgl_animation_handler();
+    if(!sgl_task_queue_is_empty()) {
+        sgl_task_t task = sgl_task_queue_pop();
+        task.task_fun(task.data);
+    }
+}
+
+
+#define  sgl_ev_stat(obj)  sgl_obj_get_event_status(obj)
+
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif //__SGL_H__

@@ -32,36 +32,31 @@ extern "C" {
 
 
 #include <stdbool.h>
+#include <stddef.h>
 
-/*************************************************************************************
- * Function Name: container_of
- * Description: Get the address of the structure instance.
+/**
+ * @brief Get the address of the structure instance.
  *
- * Param:
- *   @ptr: address of the structure member.
- *   @struct_type: type of the structure.
- *   @member: member name of the ptr in structure.
- * Return:
- *   void
- ************************************************************************************/
+ * @ptr: address of the structure member.
+ * @struct_type: type of the structure.
+ * @member: member name of the ptr in structure.
+ *   
+ * @return none
+ */
 #define   sgl_offsetof(struct_t, member)   ((size_t)&((struct_t*)0)->member)
 #ifdef __cplusplus
 #define container_of(ptr, type, member) ({ \
-        typeof(((type *)0)->member)*__mptr = ptr; \
-        (type *)((char *)__mptr - sgl_offsetof(type, member)); })
+        (type *)((char *)ptr - sgl_offsetof(type, member)); })
 #else
 #define container_of(ptr, type, member) ({ \
-        typeof(((type *)0)->member)(*__mptr) = ((void *)ptr); \
-        (type *)((char *)__mptr - sgl_offsetof(type, member)); })
+        (type *)((char *)ptr - sgl_offsetof(type, member)); })
 #endif
 
 
-#define __used  __attribute__((used))
-
-/*************************************************************************************
+/**
  * @prev: previous node of the list.
  * @next: next node of the list.
- ************************************************************************************/
+ */
 typedef struct sgl_list_node {
 	struct sgl_list_node *prev;
 	struct sgl_list_node *next;
@@ -70,86 +65,80 @@ typedef struct sgl_list_node {
 #define SGL_LIST_HEAD(name) \
 	sgl_list_node_t name = {.prev = &(name), .next = &(name)}
 
-/*************************************************************************************
- * Function Name: sgl_list_for_each
- * Description: foreach the list.
+
+/**
+ * @brief foreach the list.
  *
- * Param:
- *   @pos: the &struct list_head to use as a loop cursor.
- *   @list_head: the head for your list.
- * Return:
- *   void
- ************************************************************************************/
+ * @pos: the &struct list_head to use as a loop cursor.
+ * @list_head: the head for your list.
+ * 
+ * @return none
+ */
 #define sgl_list_for_each(pos, list_head) \
 	for (pos = (list_head)->next; pos != (list_head); pos = pos->next)
 
-/*************************************************************************************
- * Function Name: sgl_list_next_entry
- * Description: Return the next entry of specific node.
+
+/**
+ * @brief Return the next entry of specific node.
  *
- * Param:
- *   @entry: specific entry.
- * Return:
- *   @entry_type: next entry of specific entry.
- ************************************************************************************/
+ * @entry: specific entry.
+ *
+ * @return entry_type: next entry of specific entry.
+ */
 #define sgl_list_next_entry(entry, entry_type, list_node_member) \
 	container_of(entry->list_node_member.next, entry_type, list_node_member)
 
-/*************************************************************************************
- * Function Name: sgl_list_prev_entry
- * Description: Return the previous entry of specific node.
+
+/**
+ * @brief Return the previous entry of specific node.
  *
- * Param:
- *   @entry: specific entry.
- * Return:
- *   @entry_type: previous entry of specific entry.
- ************************************************************************************/
+ * @entry: specific entry.
+ *
+ * @return entry_type: previous entry of specific entry.
+ */
 #define sgl_list_prev_entry(entry, entry_type, list_node_member) \
 	container_of(entry->list_node_member.prev, entry_type, list_node_member)
 
-/*************************************************************************************
- * Function Name: sgl_list_for_each_entry
- * Description: foreach the list inserted in a structure.
+
+/**
+ * @brief foreach the list inserted in a structure.
  *
- * Param:
- *   @pos: the &struct list_head to use as a loop cursor.
- *   @list_head: the head for your list.
- *   @entry_type: type of the struct.
- *   @list_node_member: member name of the list_node in structure.
- * Return:
- *   void
- ************************************************************************************/
+ * @pos: the &struct list_head to use as a loop cursor.
+ * @list_head: the head for your list.
+ * @entry_type: type of the struct.
+ * @list_node_member: member name of the list_node in structure.
+ *
+ * @return none
+ */
 #define sgl_list_for_each_entry(pos, list_head, entry_type, list_node_member) \
 	for (pos = container_of((list_head)->next, entry_type, list_node_member); \
 	     &pos->list_node_member != (list_head); \
 	     pos = container_of(pos->list_node_member.next, entry_type, list_node_member))
 
-/*************************************************************************************
- * Function Name: sgl_list_init
- * Description: inititialize a list.
+
+/**
+ * @brief inititialize a list.
  *
- * Param:
- *   @node: inserted node.
- * Return:
- *   void
- ************************************************************************************/
-static void __used sgl_list_init(sgl_list_node_t *node) 
+ * @node: inserted node.
+ *
+ * @return none
+ */
+static inline void sgl_list_init(sgl_list_node_t *node) 
 {
 	node->next = node;
 	node->prev = node;
 }
 
-/*************************************************************************************
- * Function Name: sgl_list_add_node_at_tail
- * Description: Add a node to the list tail.
+
+/**
+ * @brief Add a node to the list tail.
  *
- * Param:
- *   @head: head node of the list.
- *   @node: inserted node.
- * Return:
- *   void
- ************************************************************************************/
-static void __used sgl_list_add_node_at_tail(sgl_list_node_t *head, sgl_list_node_t *node)
+ * @head: head node of the list.
+ * @node: inserted node.
+ * 
+ * @return none
+ */
+static inline void sgl_list_add_node_at_tail(sgl_list_node_t *head, sgl_list_node_t *node)
 {
 	sgl_list_node_t *tail = head->prev;
 
@@ -159,17 +148,16 @@ static void __used sgl_list_add_node_at_tail(sgl_list_node_t *head, sgl_list_nod
 	head->prev = node;
 }
 
-/*************************************************************************************
- * Function Name: sgl_list_add_node_at_front
- * Description: Add a node to the list front.
+
+/**
+ * @brief Add a node to the list front.
  *
- * Param:
- *   @head: head node of the list.
- *   @node: inserted node.
- * Return:
- *   void
- ************************************************************************************/
-static void __used sgl_list_add_node_at_front(sgl_list_node_t *head, sgl_list_node_t *node)
+ * @head: head node of the list.
+ * @node: inserted node.
+ * 
+ * @return none
+ */
+static inline void sgl_list_add_node_at_front(sgl_list_node_t *head, sgl_list_node_t *node)
 {
 	sgl_list_node_t *front = head->next;
 
@@ -179,16 +167,15 @@ static void __used sgl_list_add_node_at_front(sgl_list_node_t *head, sgl_list_no
 	head->next = node;
 }
 
-/*************************************************************************************
- * Function Name: sgl_list_del_tail_node
- * Description: Delete a tail node from the list.
+
+/**
+ * @brief Delete a tail node from the list.
  *
- * Param:
- *   @head: head node of the list.
- * Return:
- *   void
- ************************************************************************************/
-static void __used sgl_list_del_tail_node(sgl_list_node_t *head)
+ * @head: head node of the list.
+ * 
+ * @return none
+ */
+static inline void sgl_list_del_tail_node(sgl_list_node_t *head)
 {
 	sgl_list_node_t *tail_prev = head->prev->prev;
 
@@ -196,16 +183,15 @@ static void __used sgl_list_del_tail_node(sgl_list_node_t *head)
 	head->prev = tail_prev;
 }
 
-/*************************************************************************************
- * Function Name: sgl_list_del_front_node
- * Description:  Delete a front node from the list.
+
+/**
+ * @brief  Delete a front node from the list.
  *
- * Param:
- *   @head: head node of the list.
- * Return:
- *   void
- ************************************************************************************/
-static void __used sgl_list_del_front_node(sgl_list_node_t *head)
+ * @head: head node of the list.
+ * 
+ * @return none
+ */
+static inline void sgl_list_del_front_node(sgl_list_node_t *head)
 {
 	sgl_list_node_t *front_next = head->next->next;
 
@@ -213,59 +199,55 @@ static void __used sgl_list_del_front_node(sgl_list_node_t *head)
 	head->next = front_next;
 }
 
-/*************************************************************************************
- * Function Name: sgl_list_del_node
- * Description:  Delete a node from the list.
+
+/**
+ * @brief  Delete a node from the list.
  *
- * Param:
- *   @node: the node of the list.
- * Return:
- *   void
- ************************************************************************************/
-static void __used sgl_list_del_node(sgl_list_node_t *node)
+ * @node: the node of the list.
+ * 
+ * @return none
+ */
+static inline void sgl_list_del_node(sgl_list_node_t *node)
 {
 	node->prev->next = node->next;
 	node->next->prev = node->prev;
 }
 
-/*************************************************************************************
- * Function Name: sgl_list_is_empty
- * Description: Determine whether the list is empty.
+
+/**
+ * @brief Determine whether the list is empty.
  *
- * Param:
- *   @head: head node of the list.
- * Return:
- *   @bool: is empty.
- ************************************************************************************/
-static bool __used sgl_list_is_empty(sgl_list_node_t *head)
+ * @head: head node of the list.
+ * 
+ * @return  bool: is empty.
+ */
+static inline bool sgl_list_is_empty(sgl_list_node_t *head)
 {
 	return head->next == head;
 }
 
-/*************************************************************************************
- * Function Name: sgl_list_next_node
- * Description: Return the next node of specific node.
+
+/**
+ * @brief Return the next node of specific node.
  *
- * Param:
- *   @node: specific node.
- * Return:
- *   @list_node*: next node of specific node.
- ************************************************************************************/
-static sgl_list_node_t* __used sgl_list_next_node(sgl_list_node_t *node)
+ * @node: specific node.
+ *
+ * @return list_node*: next node of specific node.
+ */
+static inline sgl_list_node_t* sgl_list_next_node(sgl_list_node_t *node)
 {
 	return node->next;
 }
 
-/*************************************************************************************
- * Function Name: sgl_list_prev_node
- * Description: Return the previous node of specific node.
+
+/**
+ * @brief Return the previous node of specific node.
  *
- * Param:
- *   @node: specific node.
- * Return:
- *   @list_node*: previous node of specific node.
- ************************************************************************************/
-static sgl_list_node_t* __used sgl_list_prev_node(sgl_list_node_t *node)
+ * @node: specific node.
+ * 
+ * @return list_node*: previous node of specific node.
+ */
+static inline sgl_list_node_t* sgl_list_prev_node(sgl_list_node_t *node)
 {
 	return node->prev;
 }

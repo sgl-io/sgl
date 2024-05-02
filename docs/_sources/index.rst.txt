@@ -15,6 +15,8 @@ Welcome to SGL's documentation!
    docs/introduce.rst
    docs/transplant.rst
    docs/guide.rst
+   docs/debug/debug.rst
+
 
 Indices and tables
 ==================

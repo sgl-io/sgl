@@ -27,9 +27,7 @@
 #define __SGL_RADIOBTN_H__
 
 #include "../core/sgl_core.h"
-#include "../sgl.h"
-#include "../draw/sgl_draw_rect.h"
-#include "../draw/sgl_draw_circle.h"
+
 
 
 typedef struct sgl_radiobtn {
@@ -47,7 +45,6 @@ void sgl_radiobtn_set_status(sgl_obj_t *obj, bool status);
 bool sgl_radiobtn_get_status(sgl_obj_t *obj);
 void sgl_radiobtn_set_font(sgl_obj_t *obj, sgl_font_t *font);
 void sgl_radiobtn_set_text(sgl_obj_t *obj, const char* text);
-void sgl_radiobtn_draw(sgl_obj_t *obj);
-void sgl_radiobtn_event_cb(sgl_obj_t *obj);
+
 
 #endif //__SGL_RADIOBTN_H__

@@ -27,14 +27,12 @@
 #define __SGL_SWITCH_H__
 
 #include "../core/sgl_core.h"
-#include "../sgl.h"
-#include "../draw/sgl_draw_rect.h"
-#include "../draw/sgl_draw_circle.h"
 
 
 typedef struct sgl_switch {
     sgl_obj_t   obj;
     sgl_color_t toggle_color;
+    sgl_img_t   *toggle_img;
     bool status;
 
 }sgl_switch_t;
@@ -43,9 +41,9 @@ typedef struct sgl_switch {
 int sgl_switch_init(sgl_switch_t *sw_btn, sgl_obj_t* parent, bool status);
 sgl_obj_t* sgl_switch_create(sgl_obj_t* parent, bool status);
 void sgl_switch_set_toggle_color(sgl_obj_t *obj, sgl_color_t color);
-void sgl_switch_draw(sgl_obj_t* obj);
+void sgl_switch_set_toggle_img(sgl_obj_t *obj, sgl_img_t *img);
 void sgl_switch_set_status(sgl_obj_t *obj, bool status);
 bool sgl_switch_get_status(sgl_obj_t* obj);
-void sgl_switch_event_cb(sgl_obj_t *obj);
+void sgl_switch_set_anim_flag(sgl_obj_t *obj, bool flag);
 
 #endif //__SGL_SWITCH_H__

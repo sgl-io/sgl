@@ -24,7 +24,6 @@
  */
 
 #include "./sgl_draw_line.h"
-#include "stdio.h"
 
 
 void sgl_draw_line(sgl_surf_t *surf, int16_t x1, int16_t y1, int16_t x2, int16_t y2, sgl_color_t fg_color, sgl_color_t bg_color)

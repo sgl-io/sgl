@@ -55,6 +55,10 @@ void sgl_draw_round_rect_hollow_bhalf_on_bg(sgl_surf_t *surf, sgl_rect_t rect, i
 void sgl_draw_round_rect_hollow_lhalf_on_bg(sgl_surf_t *surf, sgl_rect_t rect, int radius, sgl_color_t color);
 void sgl_draw_round_rect_hollow_rhalf_on_bg(sgl_surf_t *surf, sgl_rect_t rect, int radius, sgl_color_t color);
 
+void sgl_draw_round_rect_transp_on_bg(sgl_surf_t *surf, sgl_rect_t rect, int radius, sgl_color_t color, uint8_t alpha);
+void sgl_draw_round_rect_hollow_transp_on_bg(sgl_surf_t *surf, sgl_rect_t rect, int radius, sgl_color_t color, uint8_t alpha);
+
+
 void sgl_draw_round_rect_img(sgl_surf_t *surf, sgl_rect_t rect, int radius, sgl_color_t bg_color, sgl_img_t *img);
 void sgl_draw_round_rect_img_on_bg(sgl_surf_t *surf, sgl_rect_t rect, int radius, sgl_img_t *img);
 void sgl_draw_round_rect_img_transp_on_bg(sgl_surf_t *surf, sgl_rect_t rect, int radius, sgl_img_t *img, uint8_t alpha);

@@ -27,9 +27,6 @@
 #define  __SGL_ARCBAR_H__
 
 #include "../core/sgl_core.h"
-#include "../sgl.h"
-#include "../draw/sgl_draw_rect.h"
-#include "../draw/sgl_draw_arc.h"
 
 
 typedef struct sgl_arcbar {
@@ -47,7 +44,5 @@ void sgl_arcbar_set_value(sgl_obj_t* obj, uint8_t value);
 void sgl_arcbar_set_thick(sgl_obj_t* obj, uint8_t thick);
 uint8_t sgl_arcbar_get_value(sgl_obj_t* obj);
 void sgl_arcbar_set_font(sgl_obj_t* obj, sgl_font_t *font);
-void sgl_arcbar_draw(sgl_obj_t* obj);
-
 
 #endif

@@ -24,9 +24,19 @@
  */
 
 #include "./sgl_button.h"
-#include "stdio.h"
-#include "../draw/sgl_draw_icon.h"
+#include "./sgl_obj.h"
+#include "./sgl_page.h"
+#include "./sgl_device.h"
+#include "./sgl_task.h"
+#include "../libs/sgl_mem.h"
+#include "../libs/sgl_string.h"
+#include "../draw/sgl_draw.h"
+#include "../draw/sgl_draw_rect.h"
 #include "../draw/sgl_draw_font.h"
+#include "../draw/sgl_draw_circle.h"
+#include "../draw/sgl_draw_icon.h"
+
+static void sgl_button_event_cb(sgl_obj_t *obj);
 
 int sgl_button_init(sgl_button_t *button, sgl_obj_t* parent)
 {
@@ -39,13 +49,13 @@ int sgl_button_init(sgl_button_t *button, sgl_obj_t* parent)
     button->font = NULL;
     obj = &button->obj;
     obj->parent = parent;
+    obj->dirty = 1;
     obj->selected = 0;
     obj->hide = 0;
-    obj->obj_type = SGL_OBJ_BUTTON;
+    obj->draw_cb = sgl_button_event_cb;
     obj->event_data = NULL;
     obj->ev_stat = SGL_EVENT_FORCE_DRAW;
     sgl_page_add_obj(parent, obj);
-    sgl_page_add_dirty_obj(parent, obj);
     return 0;
 }
 
@@ -56,7 +66,7 @@ sgl_obj_t* sgl_button_create(sgl_obj_t* parent)
     if(parent == NULL) {
         return NULL;
     }
-    button = (sgl_button_t *)sgl_alloc(sizeof(sgl_button_t));
+    button = (sgl_button_t *)sgl_malloc(sizeof(sgl_button_t));
     if(button == NULL)
         return NULL;
     ret = sgl_button_init(button, parent);
@@ -78,6 +88,12 @@ void sgl_button_set_toggle_color(sgl_obj_t *obj, sgl_color_t color)
     button->toggle_color = color;
 }
 
+void sgl_button_set_toggle_img(sgl_obj_t *obj, sgl_img_t *img)
+{
+    sgl_button_t *button = container_of(obj, sgl_button_t, obj);
+    button->toggle_img = img;
+}
+
 void sgl_button_set_font(sgl_obj_t *obj, sgl_font_t *font)
 {
     sgl_button_t *button = container_of(obj, sgl_button_t, obj);
@@ -96,7 +112,7 @@ void sgl_button_set_icon(sgl_obj_t *obj, sgl_icon_t *icon)
     button->icon = icon;
 }
 
-void sgl_button_draw(sgl_obj_t* obj)
+static void sgl_button_draw(sgl_obj_t* obj)
 {
     sgl_widget_draw_rect(rect);
     int _start_x = 0, _start_y = 0;
@@ -104,37 +120,52 @@ void sgl_button_draw(sgl_obj_t* obj)
     sgl_button_t *button = container_of(obj, sgl_button_t, obj);
     sgl_surf_t *surf = sgl_get_active_surf(obj);
     sgl_img_t *bg_img = sgl_obj_get_bgimg(obj->parent);
+    sgl_img_t *obj_img = obj->bg_img;
     sgl_widget_buffer_valid(obj);
     if(bg_img == NULL) {
-        sgl_draw_obj_buffer_clear(surf, obj, obj->parent->style.body_color);
+        sgl_draw_obj_buffer_clear(surf, obj, obj->parent->style->body_color);
     }
     else {
-        sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->style.bg_img);
+        sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->bg_img);
     }
     if(obj->hide) return;
     if(obj->ev_stat == SGL_EVENT_PRESSED) {
-        if(obj->style.radius == 0) {
-            sgl_draw_rect_solid(surf, rect, button->toggle_color);
+        if(bg_img == NULL) {
+            if(button->toggle_img) {
+                sgl_draw_round_rect_img(surf, rect, obj->style->radius, obj->parent->style->body_color, button->toggle_img);
+            }
+            else {
+                sgl_draw_round_rect_solid(surf, rect, obj->style->radius, button->toggle_color, obj->parent->style->body_color);
+            }
         }
-        else {
-            if(bg_img == NULL)
-                sgl_draw_round_rect_solid(surf, rect, obj->style.radius, button->toggle_color, obj->parent->style.body_color);
-            else
-                sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style.radius, button->toggle_color);
+        else{
+            if(button->toggle_img) {
+                sgl_draw_round_rect_img_on_bg(surf, rect, obj->style->radius, button->toggle_img);
+            }
+            else {
+                sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style->radius, button->toggle_color);
+            }
         }
         _color = button->toggle_color;
     }
     else if(obj->ev_stat == SGL_EVENT_RELEASED || obj->ev_stat == SGL_EVENT_NORMAL || obj->ev_stat == SGL_EVENT_FORCE_DRAW) {
-        if(obj->style.radius == 0) {
-            sgl_draw_rect_solid(surf, rect, obj->style.body_color);
+        if(bg_img == NULL) {
+            if(obj_img) {
+                sgl_draw_round_rect_img(surf, rect, obj->style->radius, obj->parent->style->body_color, obj_img);
+            }
+            else {
+                sgl_draw_round_rect_solid(surf, rect, obj->style->radius, obj->style->body_color, obj->parent->style->body_color);
+            }
         }
-        else {
-            if(bg_img == NULL)
-                sgl_draw_round_rect_solid(surf, rect, obj->style.radius, obj->style.body_color, obj->parent->style.body_color);
-            else
-                sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style.radius, obj->style.body_color);
+        else{
+            if(obj_img) {
+                sgl_draw_round_rect_img_on_bg(surf, rect, obj->style->radius, obj_img);
+            }
+            else {
+                sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style->radius, obj->style->body_color);
+            }
         }
-        _color = obj->style.body_color;
+        _color = obj->style->body_color;
     }
     else {
         //TODO: add other event type
@@ -144,20 +175,20 @@ void sgl_button_draw(sgl_obj_t* obj)
             _start_x = sgl_widget_draw_ofs_x((obj->size.w - button->icon->width)/2);
             _start_y = sgl_widget_draw_ofs_y((obj->size.h - button->icon->height)/2);
             if(bg_img == NULL)
-                sgl_draw_icon(surf, _start_x, _start_y, obj->style.text_color, _color, button->icon);
+                sgl_draw_icon(surf, _start_x, _start_y, obj->style->text_color, _color, button->icon);
             else
-                sgl_draw_icon_on_bg(surf, _start_x, _start_y, obj->style.text_color, button->icon);
+                sgl_draw_icon_on_bg(surf, _start_x, _start_y, obj->style->text_color, button->icon);
         }
         else {
             int text_width = sgl_text_width(button->font, button->text) + 4;
             _start_x = sgl_widget_draw_ofs_x((obj->size.w - button->icon->width - text_width)/2);
             _start_y = sgl_widget_draw_ofs_y((obj->size.h - button->icon->height)/2);
-            sgl_draw_icon(surf, _start_x, _start_y, obj->style.text_color, _color, button->icon);
+            sgl_draw_icon(surf, _start_x, _start_y, obj->style->text_color, _color, button->icon);
             _start_y = sgl_widget_draw_ofs_y((obj->size.h - sgl_text_height(button->font))/2);
             if(bg_img == NULL)
-                sgl_draw_font_string(surf, _start_x + button->icon->width + 4, _start_y, button->text, obj->style.text_color, _color, button->font);
+                sgl_draw_font_string(surf, _start_x + button->icon->width + 4, _start_y, button->text, obj->style->text_color, _color, button->font);
             else
-                sgl_draw_font_string_on_bg(surf, _start_x + button->icon->width + 4, _start_y, button->text, obj->style.text_color, button->font);
+                sgl_draw_font_string_on_bg(surf, _start_x + button->icon->width + 4, _start_y, button->text, obj->style->text_color, button->font);
         }
     }
     else {
@@ -166,17 +197,17 @@ void sgl_button_draw(sgl_obj_t* obj)
             _start_x = sgl_widget_draw_ofs_x((obj->size.w - text_width)/2);
             _start_y = sgl_widget_draw_ofs_y((obj->size.h - sgl_text_height(button->font))/2);
             if(bg_img == NULL)
-                sgl_draw_font_string(surf, _start_x, _start_y, button->text, obj->style.text_color, _color, button->font);
+                sgl_draw_font_string(surf, _start_x, _start_y, button->text, obj->style->text_color, _color, button->font);
             else
-                sgl_draw_font_string_on_bg(surf, _start_x, _start_y, button->text, obj->style.text_color, button->font);
+                sgl_draw_font_string_on_bg(surf, _start_x, _start_y, button->text, obj->style->text_color, button->font);
         }
     }
-    sgl_draw_obj_selected(obj, surf, rect, obj->style.body_color);
+    sgl_draw_obj_selected(obj, surf, rect, obj->style->body_color);
     sgl_widget_draw_buffer_flush(obj, surf);
 }
 
 
-void sgl_button_event_cb(sgl_obj_t *obj)
+static void sgl_button_event_cb(sgl_obj_t *obj)
 {
     sgl_obj_event_cb(obj);
     sgl_button_draw(obj);

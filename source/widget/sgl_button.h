@@ -28,14 +28,13 @@
 
 
 #include "../core/sgl_core.h"
-#include "../sgl.h"
-#include "../draw/sgl_draw_rect.h"
-#include "../draw/sgl_draw_circle.h"
+
 
 
 typedef struct sgl_button {
     sgl_obj_t   obj;
     sgl_color_t toggle_color;
+    sgl_img_t   *toggle_img;
     sgl_font_t  *font;
     const char  *text;
     sgl_icon_t  *icon;
@@ -46,12 +45,9 @@ typedef struct sgl_button {
 int sgl_button_init(sgl_button_t *button, sgl_obj_t* parent);
 sgl_obj_t* sgl_button_create(sgl_obj_t* parent);
 void sgl_button_set_toggle_color(sgl_obj_t *obj, sgl_color_t color);
+void sgl_button_set_toggle_img(sgl_obj_t *obj, sgl_img_t *img);
 void sgl_button_set_font(sgl_obj_t *obj, sgl_font_t *font);
 void sgl_button_set_text(sgl_obj_t *obj, const char *text);
 void sgl_button_set_icon(sgl_obj_t *obj, sgl_icon_t *icon);
-void sgl_button_draw(sgl_obj_t* obj);
-void sgl_button_event_cb(sgl_obj_t *obj);
-void sgl_button_press(sgl_obj_t *obj);
-void sgl_button_release(sgl_obj_t *obj);
 
 #endif //__SGL_BUTTON_H__

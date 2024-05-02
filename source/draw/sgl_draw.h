@@ -28,6 +28,10 @@
 
 #include "../sgl.h"
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 sgl_color_t sgl_color_mixer(sgl_color_t fg_color, sgl_color_t bg_color, uint8_t factor);
 void sgl_draw_point(sgl_surf_t *surf, int16_t x, int16_t y, sgl_color_t color);
 void sgl_draw_hline(sgl_surf_t *surf, int16_t x, int16_t y, int16_t len, sgl_color_t color);
@@ -46,7 +50,6 @@ int sgl_figure_circle_path(int16_t r, int16_t* path);
 sgl_pos_t sgl_figure_arc_endpoint(int16_t r, int16_t deg);
 int sgl_text_width(sgl_font_t *font, const char* text);
 int sgl_text_height(sgl_font_t *font);
-void sgl_draw_handler(sgl_obj_t *obj);
 sgl_color_t sgl_get_draw_buffer_color(sgl_surf_t *surf, int16_t x, int16_t y);
 
 
@@ -177,8 +180,26 @@ if(obj->selected) { \
 #define sgl_widget_draw_rect(rect) \
 sgl_rect_t rect = {.x1 = 0, .y1 = 0, .x2 = (int16_t)(obj->size.w - 1), .y2 = (int16_t)(obj->size.h - 1)};
 
-#define sgl_widget_buffer_valid(obj)  {if(!sgl_obj_draw_valid(obj)) return;}
+#define sgl_widget_buffer_valid(obj)  {if(!sgl_draw_obj_valid(obj)) return;}
 
+#endif
+
+
+/**
+* @brief Check if object drawing exceeds the size of the drawing cache
+*
+* @param obj:  The object
+*
+* @return bool  true: valid, false: invalid
+*/
+bool sgl_draw_obj_valid(sgl_obj_t *obj);
+
+
+
+
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif //__SGL_DRAW_H__

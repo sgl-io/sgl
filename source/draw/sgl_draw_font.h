@@ -30,8 +30,13 @@
 #include "./sgl_draw.h"
 
 
+#if(SGL_CONFIG_TEXT_UTF8 == 1)
+uint32_t sgl_utf8_to_unicode(const uint8_t *utf8_str, uint32_t *p_unicode_buffer);
+uint32_t sgl_search_unicode_ch_index(sgl_font_t *font, uint32_t unicode);
+#endif
+
 void sgl_draw_font( sgl_surf_t *surf, int16_t x, int16_t y, 
-                    char ch, 
+                    uint32_t ch_index,
                     sgl_color_t color, sgl_color_t bg_color, 
                     sgl_font_t *font);
 
@@ -45,7 +50,8 @@ void sgl_draw_font_string_len( sgl_surf_t *surf, int16_t x, int16_t y,
                                sgl_font_t *font);
 
 void sgl_draw_font_on_bg( sgl_surf_t *surf, int16_t x, int16_t y, 
-                           char ch, sgl_color_t color, 
+                           uint32_t ch_index, 
+                           sgl_color_t color, 
                            sgl_font_t *font);
 
 void sgl_draw_font_string_on_bg(sgl_surf_t *surf, int16_t x, int16_t y, 
@@ -58,7 +64,7 @@ void sgl_draw_font_string_len_on_bg(sgl_surf_t *surf, int16_t x, int16_t y,
                                      sgl_font_t *font);
 
 void sgl_draw_font_transp_on_bg( sgl_surf_t *surf, int16_t x, int16_t y, 
-                           char ch, sgl_color_t color, 
+                           uint32_t ch_index, sgl_color_t color,
                            sgl_font_t *font, uint8_t alpha);
 
 void sgl_draw_font_string_transp_on_bg(sgl_surf_t *surf, int16_t x, int16_t y, 
@@ -70,5 +76,14 @@ void sgl_draw_font_string_len_transp_on_bg(sgl_surf_t *surf, int16_t x, int16_t 
                                      const char *string,  int len, sgl_color_t color,
                                      sgl_font_t *font, uint8_t alpha);
 
+
+void sgl_draw_font_line(sgl_surf_t *surf, 
+                        int16_t x, int16_t y,
+                        int16_t line, 
+                        uint32_t ch_index,
+                        sgl_color_t color, sgl_color_t bg_color,
+                        sgl_font_t *font);
+
+                        
 
 #endif //__SGL_DRAW_FONT_H__

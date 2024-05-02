@@ -26,7 +26,7 @@
 #include "../core/sgl_core.h"
 
 #if(SGL_CONFIG_FONT_CONSOLAS12 == 1)
-_const uint8_t sgl_ascii_consolas12_bitmap[] = {
+static const uint8_t sgl_ascii_consolas12_bitmap[] = {
 
 /* ! */
 0x03,0xc8,0x00,  //..%+.
@@ -918,7 +918,7 @@ _const uint8_t sgl_ascii_consolas12_bitmap[] = {
 
 };
 
-_const sgl_font_table_t sgl_ascii_consolas12_tab[] = {
+static const sgl_font_table_t sgl_ascii_consolas12_tab[] = {
     {.bitmap_index = 0,	    .height = 0, .width = 6, .ofs_x = 0, .ofs_y = 12},/*( )*/
     {.bitmap_index = 0,	    .height = 7, .width = 6, .ofs_x = 0, .ofs_y = 2},/*(!)*/
     {.bitmap_index = 21,	.height = 3, .width = 6, .ofs_x = 0, .ofs_y = 2},/*(")*/

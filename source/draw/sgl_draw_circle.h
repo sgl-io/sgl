@@ -39,6 +39,8 @@ void sgl_draw_circle_thick(sgl_surf_t *surf, uint16_t cx, uint16_t cy, uint16_t 
 void sgl_draw_circle_solid_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color);
 void sgl_draw_circle_hollow_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color);
 void sgl_draw_circle_thick_on_bg( sgl_surf_t *surf, int16_t cx, int16_t cy, int16_t radius, int16_t thick, sgl_color_t color);
+void sgl_draw_circle_solid_transp_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color, uint8_t alpha);
+void sgl_draw_circle_hollow_transp_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color, uint8_t alpha);
 
 
 void sgl_draw_circle_img(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t bg_color, sgl_img_t *img);

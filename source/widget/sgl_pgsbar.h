@@ -27,9 +27,7 @@
 #define __SGL_PGSBAR__H__
 
 #include "../core/sgl_core.h"
-#include "../sgl.h"
-#include "../draw/sgl_draw_rect.h"
-#include "../draw/sgl_draw_circle.h"
+
 
 
 typedef struct sgl_pgsbar {
@@ -45,7 +43,5 @@ sgl_obj_t* sgl_pgsbar_create(sgl_obj_t* parent, uint8_t value);
 void sgl_pgsbar_set_value(sgl_obj_t* obj, uint8_t value);
 uint8_t sgl_pgsbar_get_value(sgl_obj_t* obj);
 void sgl_pgsbar_set_font(sgl_obj_t* obj, sgl_font_t *font);
-void sgl_pgsbar_draw(sgl_obj_t* obj);
-void sgl_pgsbar_event_cb(sgl_obj_t *obj);
 
 #endif //__SGL_PGSBAR__H__

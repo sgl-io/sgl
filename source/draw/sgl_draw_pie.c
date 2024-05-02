@@ -27,7 +27,6 @@
 #include "./sgl_draw_pie.h"
 #include "./sgl_draw_circle.h"
 #include "./sgl_draw_line.h"
-#include "stdio.h"
 
 static void sgl_draw_pie_blend_outedge( sgl_surf_t *surf, int16_t cx, int16_t cy, int16_t r, 
                                         int16_t angle_start, int16_t angle_end, 

@@ -25,8 +25,8 @@
 
 #include "../core/sgl_core.h"
 
-#if(SGL_CONFIG_FONT_CASCADIA_MONO == 1)
-_const uint8_t sgl_ascii_cascadia_mono17_bitmap[] = {
+#if(SGL_CONFIG_FONT_CASCADIA_MONO17 == 1)
+static const uint8_t sgl_ascii_cascadia_mono17_bitmap[] = {
 /*   */
 
 
@@ -1132,7 +1132,7 @@ _const uint8_t sgl_ascii_cascadia_mono17_bitmap[] = {
 
 };
 
-_const sgl_font_table_t sgl_ascii_cascadia_mono17_tab[] = {
+static const sgl_font_table_t sgl_ascii_cascadia_mono17_tab[] = {
     {.bitmap_index = 0,	    .height = 0, .width = 8, .ofs_x = 0, .ofs_y = 17},/*( )*/
     {.bitmap_index = 0,	    .height = 9, .width = 8, .ofs_x = 0, .ofs_y = 5},/*(!)*/
     {.bitmap_index = 36,	.height = 4, .width = 8, .ofs_x = 0, .ofs_y = 5},/*(")*/

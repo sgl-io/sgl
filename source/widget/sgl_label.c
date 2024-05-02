@@ -24,14 +24,20 @@
  */
 
 #include "./sgl_label.h"
+#include "./sgl_obj.h"
+#include "./sgl_page.h"
+#include "./sgl_device.h"
+#include "./sgl_task.h"
+#include "../libs/sgl_mem.h"
+#include "../libs/sgl_string.h"
+#include "../draw/sgl_draw.h"
+#include "../draw/sgl_draw_rect.h"
 #include "../draw/sgl_draw_font.h"
+#include "../draw/sgl_draw_circle.h"
 #include "../draw/sgl_draw_icon.h"
-#include "stdio.h"
 
-static void sgl_spin_anim_cb()
-{
-    //TODO
-}
+
+static void sgl_label_event_cb(sgl_obj_t* obj);
 
 int sgl_label_init(sgl_label_t *label, sgl_obj_t* parent)
 {
@@ -45,12 +51,13 @@ int sgl_label_init(sgl_label_t *label, sgl_obj_t* parent)
     label->align = SGL_ALIGN_CENTER_MID;
     obj = &label->obj;
     obj->parent = parent;
+    obj->dirty = 1;
     obj->selected = 0;
     obj->hide = 0;
-    obj->obj_type = SGL_OBJ_LABEL;
+    obj->alpha = 0;
+    obj->draw_cb = sgl_label_event_cb;
     obj->ev_stat = SGL_EVENT_FORCE_DRAW;
     sgl_page_add_obj(parent, obj);
-    sgl_page_add_dirty_obj(parent, obj);
     return 0;
 }
 
@@ -60,7 +67,7 @@ sgl_obj_t* sgl_label_create(sgl_obj_t* parent)
     if(parent == NULL) {
         return NULL;
     }
-    label = (sgl_label_t *)sgl_alloc(sizeof(sgl_label_t));
+    label = (sgl_label_t *)sgl_malloc(sizeof(sgl_label_t));
     if(label == NULL)
         return NULL;
     sgl_label_init(label, parent);
@@ -92,7 +99,7 @@ void sgl_label_set_text_align(sgl_obj_t *obj, sgl_align_type_e align)
 }
 
 
-void sgl_label_draw(sgl_obj_t* obj)
+static void sgl_label_draw(sgl_obj_t* obj)
 {
     sgl_label_t *label = container_of(obj, sgl_label_t, obj);
     sgl_size_t _size;
@@ -100,18 +107,39 @@ void sgl_label_draw(sgl_obj_t* obj)
     sgl_widget_draw_rect(rect);
     sgl_surf_t *surf = sgl_get_active_surf(obj);
     sgl_img_t *bg_img = sgl_obj_get_bgimg(obj->parent);
+    sgl_img_t *obj_img = obj->bg_img;
     sgl_widget_buffer_valid(obj);
     if (bg_img == NULL){        
-        if(obj->style.radius) {
-            sgl_draw_obj_buffer_clear(surf, obj, obj->parent->style.body_color);
-            sgl_draw_round_rect_solid(surf, rect, obj->style.radius, obj->style.body_color, obj->parent->style.body_color);
+        sgl_draw_obj_buffer_clear(surf, obj, obj->parent->style->body_color);
+        if(obj_img == NULL) {
+            sgl_draw_round_rect_solid(surf, rect, obj->style->radius, obj->style->body_color, obj->parent->style->body_color);
         }
         else {
-            sgl_draw_obj_buffer_clear(surf, obj, obj->style.body_color);
+            sgl_draw_round_rect_img(surf, rect, obj->style->radius, obj->parent->style->body_color, obj_img);
         }
     }
     else{
-        sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->style.bg_img);
+        if(obj->alpha == 0) {
+            sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->bg_img);
+            if(obj_img) {
+                sgl_draw_round_rect_img_on_bg(surf, rect, obj->style->radius, obj_img);
+            }
+            else {
+                sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style->radius, obj->style->body_color);
+            }
+        }
+        else if(obj->alpha == 255) {
+            sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->bg_img);
+        }
+        else {
+            sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->bg_img);
+            if(obj_img) {
+                sgl_draw_round_rect_img_transp_on_bg(surf, rect, obj->style->radius, obj_img, obj->alpha);
+            }
+            else {
+                sgl_draw_round_rect_transp_on_bg(surf, rect, obj->style->radius, obj->style->body_color, obj->alpha);
+            }
+        }
     }
     if(obj->hide) return;
     if(label->icon) {
@@ -122,10 +150,10 @@ void sgl_label_draw(sgl_obj_t* obj)
             pos.x = sgl_widget_draw_ofs_x(pos.x);
             pos.y = sgl_widget_draw_ofs_y(pos.y);
             if (bg_img == NULL){
-                sgl_draw_icon(surf, pos.x, pos.y, obj->style.text_color, obj->style.body_color, label->icon);
+                sgl_draw_icon(surf, pos.x, pos.y, obj->style->text_color, obj->style->body_color, label->icon);
             }
             else{
-                sgl_draw_icon_on_bg(surf, pos.x, pos.y, obj->style.text_color, label->icon);
+                sgl_draw_icon_on_bg(surf, pos.x, pos.y, obj->style->text_color, label->icon);
             }
         }
         else {
@@ -135,19 +163,19 @@ void sgl_label_draw(sgl_obj_t* obj)
             pos.x = sgl_widget_draw_ofs_x(pos.x);
             pos.y = sgl_widget_draw_ofs_y(pos.y);
             if (bg_img == NULL){
-                sgl_draw_icon(surf, pos.x, pos.y, obj->style.text_color, obj->style.body_color, label->icon);
+                sgl_draw_icon(surf, pos.x, pos.y, obj->style->text_color, obj->style->body_color, label->icon);
             }
             else{
-                sgl_draw_icon_on_bg(surf, pos.x, pos.y, obj->style.text_color, label->icon);
+                sgl_draw_icon_on_bg(surf, pos.x, pos.y, obj->style->text_color, label->icon);
             }           
             _size.h = sgl_text_height(label->font);
             pos = sgl_get_align_pos(&obj->size, &_size, label->align);
             pos.x = sgl_widget_draw_ofs_x(pos.x);
             pos.y = sgl_widget_draw_ofs_y(pos.y);
             if(bg_img == NULL) {
-                sgl_draw_font_string(surf, pos.x + label->icon->width + 4, pos.y, label->text, obj->style.text_color, obj->style.body_color, label->font);
+                sgl_draw_font_string(surf, pos.x + label->icon->width + 4, pos.y, label->text, obj->style->text_color, obj->style->body_color, label->font);
             }else {
-                sgl_draw_font_string_on_bg(surf, pos.x + label->icon->width + 4, pos.y, label->text, obj->style.text_color, label->font);
+                sgl_draw_font_string_on_bg(surf, pos.x + label->icon->width + 4, pos.y, label->text, obj->style->text_color, label->font);
             }            
         }
     }
@@ -159,17 +187,17 @@ void sgl_label_draw(sgl_obj_t* obj)
             pos.x = sgl_widget_draw_ofs_x(pos.x);
             pos.y = sgl_widget_draw_ofs_y(pos.y);
             if(bg_img == NULL) {
-                sgl_draw_font_string(surf, pos.x, pos.y, label->text, obj->style.text_color, obj->style.body_color, label->font); 
+                sgl_draw_font_string(surf, pos.x, pos.y, label->text, obj->style->text_color, obj->style->body_color, label->font); 
             }else {
-                sgl_draw_font_string_on_bg(surf, pos.x, pos.y, label->text, obj->style.text_color, label->font);                
+                sgl_draw_font_string_on_bg(surf, pos.x, pos.y, label->text, obj->style->text_color, label->font);                
             }            
         }
     }
-    sgl_draw_obj_selected(obj, surf, rect, obj->style.body_color);
+    sgl_draw_obj_selected(obj, surf, rect, obj->style->body_color);
     sgl_widget_draw_buffer_flush(obj, surf);
 }
 
-void sgl_label_event_cb(sgl_obj_t* obj)
+static void sgl_label_event_cb(sgl_obj_t* obj)
 {
     sgl_obj_event_cb(obj);
     sgl_label_draw(obj);

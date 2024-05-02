@@ -31,7 +31,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="索引" href="../genindex.html" />
     <link rel="search" title="搜索" href="../search.html" />
-    <link rel="next" title="用户指导" href="guide.html" />
+    <link rel="next" title="SGL开发手册" href="guide.html" />
     <link rel="prev" title="SGL简介" href="introduce.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
@@ -66,14 +66,14 @@
 <li class="toctree-l3"><a class="reference internal" href="#id2">2. 更改sgl_conf.h配置文件</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id3">3. 注册显示显示设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#id4">4. 编译</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#id5">5. 添加动画</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#linux-framebuffer">Linux framebuffer平台</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#windows">Windows平台</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="guide.html">用户指导</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide.html">SGL开发手册</a></li>
+<li class="toctree-l1"><a class="reference internal" href="debug/debug.html">调试</a></li>
 </ul>
 
         </div>
@@ -129,7 +129,7 @@ struct sgl_device_panel结构体如下：</p>
 <li><p>yres_virtual: 屏幕虚拟列分辨率</p></li>
 <li><p>flush_area: 指向显示设备的绘制窗口函数，用于将缓存中的数据发送到屏幕上显示出来。</p></li>
 </ul>
-<p>在移植的过程中，只需要使用sgl_device_register()函数注册sgl_device_panel_t和sgl_device_event_t设备即可，如果没有输入设备，可以设置为NULL即可，例如下面：</p>
+<p>在移植的过程中，只需要使用sgl_device_register()函数注册sgl_device_panel_t和sgl_device_event_t设备即可，如果没有输入设备，可以将sgl_device_event_t设置为NULL即可，例如下面：</p>
 <div class="admonition tip">
 <p class="admonition-title">小技巧</p>
 <p>注册显示屏和触摸设备可以这样：sgl_device_register(&amp;tft_device_panel, &amp;touch_device_event);
@@ -181,42 +181,60 @@ struct sgl_device_panel结构体如下：</p>
 <blockquote>
 <div><p>对于没有完整的显示缓存的MCU来说，配置文件一般如下，并且需要将该头文件的路径添加到项目的头文件路径中。</p>
 </div></blockquote>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="w"> </span><span class="c1">//是否开启DEBUG模式：TODO</span>
-<span class="linenos"> 2</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_DEBUG               0</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_DEBUG                      0</span>
+<span class="linenos"> 2</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_LOG_LEVEL                  0</span>
 <span class="linenos"> 3</span>
-<span class="linenos"> 4</span><span class="w"> </span><span class="c1">//开启动画：TODO</span>
-<span class="linenos"> 5</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_POWERON_ANIM        0</span>
-<span class="linenos"> 6</span>
-<span class="linenos"> 7</span><span class="w"> </span><span class="c1">//是否开启抗锯齿</span>
-<span class="linenos"> 8</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_AA_ENABLE           1</span>
-<span class="linenos"> 9</span>
-<span class="linenos">10</span><span class="w"> </span><span class="c1">//配置字体抗锯齿深度，默认采用4bit抗锯齿</span>
-<span class="linenos">11</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_PIXEL_BIT      4</span>
-<span class="linenos">12</span>
-<span class="linenos">13</span><span class="w"> </span><span class="c1">//显示屏面板的像素颜色深度</span>
-<span class="linenos">14</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_PANEL_PIXEL_DEPTH   16</span>
-<span class="linenos">15</span>
-<span class="linenos">16</span><span class="w"> </span><span class="c1">//1: standard混色</span>
-<span class="linenos">17</span><span class="w"> </span><span class="c1">//2: fast混色</span>
-<span class="linenos">18</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_MIXER_TYPE          2</span>
-<span class="linenos">19</span>
-<span class="linenos">20</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FRAMEBUFFER_MMAP    0</span>
-<span class="linenos">21</span>
-<span class="linenos">22</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_DRAW_STACK_MAX      256</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="w"> </span><span class="c1">//开启动画：TODO</span>
+<span class="linenos"> 6</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_POWERON_ANIM               0</span>
+<span class="linenos"> 7</span>
+<span class="linenos"> 8</span><span class="w"> </span><span class="c1">//配置字体抗锯齿深度，默认采用4bit抗锯齿</span>
+<span class="linenos"> 9</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_PIXEL_BIT             4</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span>
+<span class="linenos">12</span><span class="w"> </span><span class="c1">//显示屏面板的像素颜色深度，默认为32bit</span>
+<span class="linenos">13</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_PANEL_PIXEL_DEPTH          32</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="w"> </span><span class="c1">//FrameBuffer是否是内存映射方式</span>
+<span class="linenos">16</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FRAMEBUFFER_MMAP           1</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="w"> </span><span class="c1">//默认page背景颜色</span>
+<span class="linenos">19</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_PAGE_COLOR                 SGL_WHITE</span>
+<span class="linenos">20</span>
+<span class="linenos">21</span><span class="w"> </span><span class="c1">//RGB颜色交换</span>
+<span class="linenos">22</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_COLOR16_SWAP               0</span>
 <span class="linenos">23</span>
-<span class="linenos">24</span><span class="w"> </span><span class="c1">//0: 绘图算法使用查表方式</span>
-<span class="linenos">25</span><span class="w"> </span><span class="c1">//1: 绘图算法使用计算方式</span>
-<span class="linenos">26</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_DRAW_ALGO           1</span>
+<span class="linenos">24</span><span class="w"> </span><span class="c1">//1: standard混色</span>
+<span class="linenos">25</span><span class="w"> </span><span class="c1">//2: fast混色</span>
+<span class="linenos">26</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_MIXER_TYPE                 2</span>
 <span class="linenos">27</span>
-<span class="linenos">28</span><span class="w"> </span><span class="c1">//定义事件的队列深度</span>
-<span class="linenos">29</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_EVQUEUE_DEPTH       16</span>
-<span class="linenos">30</span>
-<span class="linenos">31</span><span class="w"> </span><span class="c1">//是否开启SGL字体</span>
-<span class="linenos">32</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_CONSOLAS12     1</span>
-<span class="linenos">33</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_CONSOLAS15     1</span>
-<span class="linenos">34</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_SONG10         1</span>
-<span class="linenos">35</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_SONG23         1</span>
-<span class="linenos">36</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_CASCADIA_MONO  1</span>
+<span class="linenos">28</span><span class="w"> </span><span class="c1">//0: heap_0</span>
+<span class="linenos">29</span><span class="w"> </span><span class="c1">//1: heap_1</span>
+<span class="linenos">30</span><span class="w"> </span><span class="c1">//2: heap_2</span>
+<span class="linenos">31</span><span class="w"> </span><span class="c1">//3: heap_3</span>
+<span class="linenos">32</span><span class="w"> </span><span class="c1">//4: heap_4</span>
+<span class="linenos">33</span><span class="w"> </span><span class="c1">//5: heap_tlsf</span>
+<span class="linenos">34</span><span class="w"> </span><span class="c1">//6: libc</span>
+<span class="linenos">35</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_HEAP_POLICY                5</span>
+<span class="linenos">36</span><span class="w"> </span><span class="c1">//定义内存池的大小，单位KByte</span>
+<span class="linenos">37</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_HEAP_POOL_SIZE             64</span>
+<span class="linenos">38</span>
+<span class="linenos">39</span>
+<span class="linenos">40</span><span class="w"> </span><span class="c1">//定义事件的队列深度</span>
+<span class="linenos">41</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_EVQUEUE_DEPTH              16</span>
+<span class="linenos">42</span>
+<span class="linenos">43</span><span class="w"> </span><span class="c1">//定义任务的队列深度</span>
+<span class="linenos">44</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_TASKQUEUE_DEPTH            8</span>
+<span class="linenos">45</span>
+<span class="linenos">46</span>
+<span class="linenos">47</span><span class="w"> </span><span class="c1">//是否开启SGL字体</span>
+<span class="linenos">48</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_CONSOLAS12            1</span>
+<span class="linenos">49</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_CONSOLAS15            1</span>
+<span class="linenos">50</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_SONG10                1</span>
+<span class="linenos">51</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_SONG23                1</span>
+<span class="linenos">52</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_FONT_CASCADIA_MONO17       1</span>
+<span class="linenos">53</span>
+<span class="linenos">54</span><span class="w"> </span><span class="cp">#define SGL_CONFIG_TEXT_UTF8                  0</span>
 </pre></div>
 </div>
 <p>对于初次使用SGL的用户可以先主要关注这两个宏：SGL_CONFIG_PANEL_PIXEL_DEPTH和SGL_CONFIG_FRAMEBUFFER_MMAP，其中SGL_CONFIG_PANEL_PIXEL_DEPTH宏用户配置显示屏的颜色深度，例如TFT显示屏
@@ -274,20 +292,6 @@ struct sgl_device_panel结构体如下：</p>
 <div><p>编译整个工程后，需要将sgl_conf.h和sgl.h的文件所在的路径包含在项目工程的头文件路径中，编译完毕后，就可以将其下载到开发板上即可。</p>
 </div></blockquote>
 </section>
-<section id="id5">
-<h3>5. 添加动画<a class="headerlink" href="#id5" title="Permalink to this heading">¶</a></h3>
-<blockquote>
-<div><p>对于需要添加动画的项目，用户需要提供一个tick定时器，用于给SGL一个基准时间，例如，用户可以注册一个定时器中断，定时器的事件间隔为5ms，然后在定时器中断函数中添加sgl_tick_inc(5);
-函数即可，如下：</p>
-</div></blockquote>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="c1">//每次间隔5ms中断一次</span>
-<span class="linenos">2</span><span class="kt">void</span><span class="w"> </span><span class="nf">ISR</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span>
-<span class="linenos">3</span><span class="p">{</span>
-<span class="linenos">4</span><span class="w">     </span><span class="n">sgl_tick_inc</span><span class="p">(</span><span class="mi">5</span><span class="p">);</span>
-<span class="linenos">5</span><span class="p">}</span>
-</pre></div>
-</div>
-</section>
 </section>
 <section id="linux-framebuffer">
 <h2>Linux framebuffer平台<a class="headerlink" href="#linux-framebuffer" title="Permalink to this heading">¶</a></h2>
@@ -302,7 +306,7 @@ struct sgl_device_panel结构体如下：</p>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="introduce.html" class="btn btn-neutral float-left" title="SGL简介" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="guide.html" class="btn btn-neutral float-right" title="用户指导" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="guide.html" class="btn btn-neutral float-right" title="SGL开发手册" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

@@ -26,7 +26,97 @@
 #ifndef __SGL_LOG_H__
 #define __SGL_LOG_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
+#include "./sgl_core.h"
+
+
+#define SGL_LOG_LEVEL_TRACE 0 /**< A lot of logs to give detailed information*/
+#define SGL_LOG_LEVEL_INFO  1 /**< Log important events*/
+#define SGL_LOG_LEVEL_WARN  2 /**< Log if something unwanted happened but didn't caused problem*/
+#define SGL_LOG_LEVEL_ERROR 3 /**< Only critical issue, when the system may fail*/
+#define SGL_LOG_LEVEL_USER  4 /**< Custom logs from the user*/
+#define SGL_LOG_LEVEL_NONE  5 /**< Do not log anything*/
+#define _SGL_LOG_LEVEL_NUM  6 /**< Number of log levels*/
+
+
+#if SGL_CONFIG_DEBUG
+
+/**
+ * @brief SGL log printing function, used to print debugging information. Note that this function 
+ *        should only be called in debugging mode, otherwise it may affect system real-time 
+ *        performance due to long execution time
+ * 
+ * @param info:  log information, such as, INFO, USER...
+ * @param format:  log content
+ * 
+ * @return none
+*/
+void sgl_log(const char *info, const char * format, ...);
+
+
+#ifndef SGL_LOG_TRACE
+#    if SGL_CONFIG_LOG_LEVEL <= SGL_LOG_LEVEL_TRACE
+#        define SGL_LOG_TRACE(...) sgl_log("[TRACE] ", __VA_ARGS__)
+#    else
+#        define SGL_LOG_TRACE(...) do {}while(0)
+#    endif
+#endif
+
+#ifndef SGL_LOG_INFO
+#    if SGL_CONFIG_LOG_LEVEL <= SGL_LOG_LEVEL_INFO
+#        define SGL_LOG_INFO(...) sgl_log("[INFO] ",  __VA_ARGS__)
+#    else
+#        define SGL_LOG_INFO(...) do {}while(0)
+#    endif
+#endif
+
+#ifndef SGL_LOG_WARN
+#    if SGL_CONFIG_LOG_LEVEL <= SGL_LOG_LEVEL_WARN
+#        define SGL_LOG_WARN(...) sgl_log("[WARN]", __VA_ARGS__)
+#    else
+#        define SGL_LOG_WARN(...) do {}while(0)
+#    endif
+#endif
+
+#ifndef SGL_LOG_ERROR
+#    if SGL_CONFIG_LOG_LEVEL <= SGL_LOG_LEVEL_ERROR
+#        define SGL_LOG_ERROR(...) sgl_log("[ERROR] ", __VA_ARGS__)
+#    else
+#        define SGL_LOG_ERROR(...) do {}while(0)
+#    endif
+#endif
+
+#ifndef SGL_LOG_USER
+#    if SGL_CONFIG_LOG_LEVEL <= SGL_LOG_LEVEL_USER
+#        define SGL_LOG_USER(...) sgl_log("[USER] ",  __VA_ARGS__)
+#    else
+#        define SGL_LOG_USER(...) do {}while(0)
+#    endif
+#endif
+
+#if SGL_CONFIG_LOG_LEVEL < SGL_LOG_LEVEL_NONE
+#    define SGL_LOG(...) sgl_log(__VA_ARGS__)
+#else
+#    define SGL_LOG(...) do {} while(0)
+#endif
+
+#else
+
+#define SGL_LOG_TRACE(...) do {}while(0)
+#define SGL_LOG_INFO(...) do {}while(0)
+#define SGL_LOG_WARN(...) do {}while(0)
+#define SGL_LOG_ERROR(...) do {}while(0)
+#define SGL_LOG_USER(...) do {}while(0)
+#define SGL_LOG(...) do {}while(0)
+
+#endif
+
+
+#ifdef __cplusplus
+} /*extern "C"*/
+#endif
 
 #endif //__SGL_LOG_H__
-

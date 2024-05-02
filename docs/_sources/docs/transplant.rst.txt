@@ -31,7 +31,7 @@ struct sgl_device_panel结构体如下：
 - yres_virtual: 屏幕虚拟列分辨率
 - flush_area: 指向显示设备的绘制窗口函数，用于将缓存中的数据发送到屏幕上显示出来。
 
-在移植的过程中，只需要使用sgl_device_register()函数注册sgl_device_panel_t和sgl_device_event_t设备即可，如果没有输入设备，可以设置为NULL即可，例如下面：
+在移植的过程中，只需要使用sgl_device_register()函数注册sgl_device_panel_t和sgl_device_event_t设备即可，如果没有输入设备，可以将sgl_device_event_t设置为NULL即可，例如下面：
 
 .. tip:: 
     注册显示屏和触摸设备可以这样：sgl_device_register(&tft_device_panel, &touch_device_event);
@@ -88,42 +88,60 @@ MCU平台
 .. code-block:: c
    :linenos:
 
-    //是否开启DEBUG模式：TODO
-    #define SGL_CONFIG_DEBUG               0
+    #define SGL_CONFIG_DEBUG                      0
+    #define SGL_CONFIG_LOG_LEVEL                  0
+
 
     //开启动画：TODO
-    #define SGL_CONFIG_POWERON_ANIM        0
-
-    //是否开启抗锯齿
-    #define SGL_CONFIG_AA_ENABLE           1
+    #define SGL_CONFIG_POWERON_ANIM               0
 
     //配置字体抗锯齿深度，默认采用4bit抗锯齿
-    #define SGL_CONFIG_FONT_PIXEL_BIT      4
+    #define SGL_CONFIG_FONT_PIXEL_BIT             4
 
-    //显示屏面板的像素颜色深度
-    #define SGL_CONFIG_PANEL_PIXEL_DEPTH   16
+
+    //显示屏面板的像素颜色深度，默认为32bit
+    #define SGL_CONFIG_PANEL_PIXEL_DEPTH          32
+
+    //FrameBuffer是否是内存映射方式
+    #define SGL_CONFIG_FRAMEBUFFER_MMAP           1
+
+    //默认page背景颜色
+    #define SGL_CONFIG_PAGE_COLOR                 SGL_WHITE
+
+    //RGB颜色交换
+    #define SGL_CONFIG_COLOR16_SWAP               0
 
     //1: standard混色
     //2: fast混色
-    #define SGL_CONFIG_MIXER_TYPE          2
+    #define SGL_CONFIG_MIXER_TYPE                 2
 
-    #define SGL_CONFIG_FRAMEBUFFER_MMAP    0
+    //0: heap_0
+    //1: heap_1
+    //2: heap_2
+    //3: heap_3
+    //4: heap_4
+    //5: heap_tlsf
+    //6: libc
+    #define SGL_CONFIG_HEAP_POLICY                5
+    //定义内存池的大小，单位KByte
+    #define SGL_CONFIG_HEAP_POOL_SIZE             64
 
-    #define SGL_CONFIG_DRAW_STACK_MAX      256
-
-    //0: 绘图算法使用查表方式
-    //1: 绘图算法使用计算方式
-    #define SGL_CONFIG_DRAW_ALGO           1
 
     //定义事件的队列深度
-    #define SGL_CONFIG_EVQUEUE_DEPTH       16
+    #define SGL_CONFIG_EVQUEUE_DEPTH              16
+
+    //定义任务的队列深度
+    #define SGL_CONFIG_TASKQUEUE_DEPTH            8
+
 
     //是否开启SGL字体
-    #define SGL_CONFIG_FONT_CONSOLAS12     1
-    #define SGL_CONFIG_FONT_CONSOLAS15     1
-    #define SGL_CONFIG_FONT_SONG10         1
-    #define SGL_CONFIG_FONT_SONG23         1
-    #define SGL_CONFIG_FONT_CASCADIA_MONO  1
+    #define SGL_CONFIG_FONT_CONSOLAS12            1
+    #define SGL_CONFIG_FONT_CONSOLAS15            1
+    #define SGL_CONFIG_FONT_SONG10                1
+    #define SGL_CONFIG_FONT_SONG23                1
+    #define SGL_CONFIG_FONT_CASCADIA_MONO17       1
+
+    #define SGL_CONFIG_TEXT_UTF8                  0
 
 
 
@@ -180,23 +198,6 @@ MCU平台
 4. 编译
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
    编译整个工程后，需要将sgl_conf.h和sgl.h的文件所在的路径包含在项目工程的头文件路径中，编译完毕后，就可以将其下载到开发板上即可。
-
-
-5. 添加动画
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   对于需要添加动画的项目，用户需要提供一个tick定时器，用于给SGL一个基准时间，例如，用户可以注册一个定时器中断，定时器的事件间隔为5ms，然后在定时器中断函数中添加sgl_tick_inc(5);
-   函数即可，如下：
-
-.. code-block:: c
-   :linenos:
-
-   //每次间隔5ms中断一次
-   void ISR(void) 
-   {
-        sgl_tick_inc(5);
-   }
-
-
 
 
 Linux framebuffer平台

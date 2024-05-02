@@ -24,7 +24,21 @@
  */
 
 #include "./sgl_pgsbar.h"
-#include "stdio.h"
+#include "./sgl_obj.h"
+#include "./sgl_page.h"
+#include "./sgl_device.h"
+#include "./sgl_event.h"
+#include "./sgl_task.h"
+#include "../libs/sgl_mem.h"
+#include "../libs/sgl_string.h"
+#include "../draw/sgl_draw.h"
+#include "../draw/sgl_draw_rect.h"
+#include "../draw/sgl_draw_font.h"
+#include "../draw/sgl_draw_circle.h"
+#include "../draw/sgl_draw_icon.h"
+
+
+static void sgl_pgsbar_event_cb(sgl_obj_t *obj);
 
 int sgl_pgsbar_init(sgl_pgsbar_t *bar, sgl_obj_t* parent, uint8_t value)
 {
@@ -37,13 +51,13 @@ int sgl_pgsbar_init(sgl_pgsbar_t *bar, sgl_obj_t* parent, uint8_t value)
     bar->anim = false;
     obj = &bar->obj;
     obj->parent = parent;
+    obj->dirty = 1;
     obj->selected = 0;
     obj->hide = 0;
-    obj->obj_type = SGL_OBJ_PROGRESSBAR;
+    obj->draw_cb = sgl_pgsbar_event_cb;
     obj->event_data = NULL;
     obj->ev_stat = SGL_EVENT_FORCE_DRAW;
     sgl_page_add_obj(parent, obj);
-    sgl_page_add_dirty_obj(parent, obj);
     return 0;
 }
 
@@ -54,7 +68,7 @@ sgl_obj_t* sgl_pgsbar_create(sgl_obj_t* parent, uint8_t value)
     if(parent == NULL) {
         return NULL;
     }
-    bar = (sgl_pgsbar_t *)sgl_alloc(sizeof(sgl_pgsbar_t));
+    bar = (sgl_pgsbar_t *)sgl_malloc(sizeof(sgl_pgsbar_t));
     if(bar == NULL)
         return NULL;
     ret = sgl_pgsbar_init(bar, parent, value);
@@ -70,7 +84,7 @@ void sgl_pgsbar_set_value(sgl_obj_t* obj, uint8_t value)
     if(value != bar->value) {
         bar->value = value;
         sgl_obj_set_event_status(obj, SGL_EVENT_PRESSED);
-        sgl_page_add_dirty_obj(obj->parent, obj);
+        obj->dirty = 1;
     }
 }
 
@@ -86,7 +100,7 @@ void sgl_pgsbar_set_font(sgl_obj_t* obj, sgl_font_t *font)
     bar->font = font;
 }
 
-void sgl_pgsbar_draw(sgl_obj_t* obj)
+static void sgl_pgsbar_draw(sgl_obj_t* obj)
 {
     sgl_pgsbar_t *bar = container_of(obj, sgl_pgsbar_t, obj);
     char value[5] = {' ', ' ', ' ', '%', 0};
@@ -125,75 +139,75 @@ void sgl_pgsbar_draw(sgl_obj_t* obj)
          * 
          * draw background bar
         */
-        if(obj->style.radius) {
+        if(obj->style->radius) {
             if(bg_img == NULL)
-                sgl_draw_obj_buffer_clear(surf, obj, obj->parent->style.body_color);
+                sgl_draw_obj_buffer_clear(surf, obj, obj->parent->style->body_color);
             else
-                sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->style.bg_img);
+                sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->bg_img);
             if(obj->hide) return;
             if(bar->font) {
                 rect.x2 = sgl_widget_draw_ofs_x(width);
                 int pos_y = sgl_widget_draw_ofs_y((obj->size.h - sgl_text_height(bar->font)) / 2);
                 if(bg_img == NULL)
-                    sgl_draw_font_string(surf, rect.x2 + 2, pos_y, value, obj->style.text_color, obj->parent->style.body_color, bar->font);
+                    sgl_draw_font_string(surf, rect.x2 + 2, pos_y, value, obj->style->text_color, obj->parent->style->body_color, bar->font);
                 else
-                    sgl_draw_font_string_on_bg(surf, rect.x2 + 2, pos_y, value, obj->style.text_color, bar->font);
+                    sgl_draw_font_string_on_bg(surf, rect.x2 + 2, pos_y, value, obj->style->text_color, bar->font);
             }
-            if(pos_x >= (width - obj->style.radius)) {
+            if(pos_x >= (width - obj->style->radius)) {
                 rect.x2 = sgl_widget_draw_ofs_x(width);
                 if(bg_img == NULL)
-                    sgl_draw_round_rect_solid(surf, rect, obj->style.radius, obj->style.text_color, obj->parent->style.body_color);
+                    sgl_draw_round_rect_solid(surf, rect, obj->style->radius, obj->style->text_color, obj->parent->style->body_color);
                 else
-                    sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style.radius, obj->style.text_color);
+                    sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style->radius, obj->style->text_color);
             }
             else if(pos_x == 0) {
                 if(bg_img == NULL)
-                    sgl_draw_round_rect_solid(surf, rect, obj->style.radius, obj->style.body_color, obj->parent->style.body_color);
+                    sgl_draw_round_rect_solid(surf, rect, obj->style->radius, obj->style->body_color, obj->parent->style->body_color);
                 else
-                    sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style.radius, obj->style.body_color);
+                    sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style->radius, obj->style->body_color);
             }
-            else if(pos_x <= obj->style.radius) {
-                rect.x2 = sgl_widget_draw_ofs_x(obj->style.radius);
+            else if(pos_x <= obj->style->radius) {
+                rect.x2 = sgl_widget_draw_ofs_x(obj->style->radius);
                 if(bg_img == NULL)
-                    sgl_draw_round_rect_solid_lhalf(surf, rect, obj->style.radius, obj->style.text_color, obj->parent->style.body_color);
+                    sgl_draw_round_rect_solid_lhalf(surf, rect, obj->style->radius, obj->style->text_color, obj->parent->style->body_color);
                 else
-                    sgl_draw_round_rect_solid_lhalf_on_bg(surf, rect, obj->style.radius, obj->style.text_color);
+                    sgl_draw_round_rect_solid_lhalf_on_bg(surf, rect, obj->style->radius, obj->style->text_color);
                 rect.x1 = rect.x2;
                 rect.x2 = sgl_widget_draw_ofs_x(width);
                 if(bg_img == NULL)
-                    sgl_draw_round_rect_solid_rhalf(surf, rect, obj->style.radius, obj->style.body_color, obj->parent->style.body_color);
+                    sgl_draw_round_rect_solid_rhalf(surf, rect, obj->style->radius, obj->style->body_color, obj->parent->style->body_color);
                 else
-                    sgl_draw_round_rect_solid_rhalf_on_bg(surf, rect, obj->style.radius, obj->style.body_color);
+                    sgl_draw_round_rect_solid_rhalf_on_bg(surf, rect, obj->style->radius, obj->style->body_color);
             }
             else {
                 rect.x1 = sgl_widget_draw_ofs_x(0);
                 rect.x2 = sgl_widget_draw_ofs_x(pos_x);
                 if(bg_img == NULL)
-                    sgl_draw_round_rect_solid_lhalf(surf, rect, obj->style.radius, obj->style.text_color, obj->parent->style.body_color);
+                    sgl_draw_round_rect_solid_lhalf(surf, rect, obj->style->radius, obj->style->text_color, obj->parent->style->body_color);
                 else
-                    sgl_draw_round_rect_solid_lhalf_on_bg(surf, rect, obj->style.radius, obj->style.text_color);
+                    sgl_draw_round_rect_solid_lhalf_on_bg(surf, rect, obj->style->radius, obj->style->text_color);
                 rect.x1 = sgl_widget_draw_ofs_x(pos_x);
                 rect.x2 = sgl_widget_draw_ofs_x(width);
                 if(bg_img == NULL)
-                    sgl_draw_round_rect_solid_rhalf(surf, rect, obj->style.radius, obj->style.body_color, obj->parent->style.body_color);
+                    sgl_draw_round_rect_solid_rhalf(surf, rect, obj->style->radius, obj->style->body_color, obj->parent->style->body_color);
                 else
-                    sgl_draw_round_rect_solid_rhalf_on_bg(surf, rect, obj->style.radius, obj->style.body_color);
+                    sgl_draw_round_rect_solid_rhalf_on_bg(surf, rect, obj->style->radius, obj->style->body_color);
             }
         }
         else {
-            sgl_draw_buffer_clear(surf, obj->style.body_color);
+            sgl_draw_buffer_clear(surf, obj->style->body_color);
             if(bar->font) {
                 
             }
-            sgl_draw_rect_solid(surf, rect, obj->style.text_color);
+            sgl_draw_rect_solid(surf, rect, obj->style->text_color);
         }
     }
-    sgl_draw_obj_selected(obj, surf, rect, obj->style.text_color);
+    sgl_draw_obj_selected(obj, surf, rect, obj->style->text_color);
     sgl_widget_draw_buffer_flush(obj, surf);
 }
 
 
-void sgl_pgsbar_event_cb(sgl_obj_t *obj)
+static void sgl_pgsbar_event_cb(sgl_obj_t *obj)
 {
     sgl_pgsbar_t *bar = container_of(obj, sgl_pgsbar_t, obj);
     if(obj->ev_stat == SGL_EVENT_PRESSED) {

@@ -27,10 +27,7 @@
 #define __SGL_LABEL_H__
 
 #include "../core/sgl_core.h"
-#include "../sgl.h"
-#include "../draw/sgl_draw_rect.h"
-#include "../draw/sgl_draw_circle.h"
-#include "../draw/sgl_draw_font.h"
+
 
 typedef struct sgl_label {
     sgl_obj_t obj;
@@ -49,8 +46,6 @@ void sgl_label_set_font(sgl_obj_t *obj, sgl_font_t *font);
 void sgl_label_set_text(sgl_obj_t *obj, const char *text);
 void sgl_label_set_text_align(sgl_obj_t *obj, sgl_align_type_e align);
 void sgl_label_set_icon(sgl_obj_t *obj, sgl_icon_t *icon);
-void sgl_label_draw(sgl_obj_t* obj);
-void sgl_label_event_cb(sgl_obj_t* obj);
 
 
 #endif

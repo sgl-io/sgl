@@ -24,9 +24,37 @@
  */
 
 #include "./sgl_log.h"
+#include "../libs/sgl_string.h"
+#include "stdarg.h"
+#include "./sgl_device.h"
 
 #if SGL_CONFIG_DEBUG
 
-
+/**
+ * @brief SGL log printing function, used to print debugging information. Note that this function 
+ *        should only be called in debugging mode, otherwise it may affect system real-time 
+ *        performance due to long execution time
+ * 
+ * @param info:  log information, such as, INFO, USER...
+ * @param format:  log content
+ * 
+ * @return none
+*/
+void sgl_log(const char *info, const char * format, ...)
+{
+    sgl_device_stdout_t *out_dev;
+    char buffer[256];
+    char *p = buffer;
+    sgl_strcpy(p, info);
+    p += sgl_strlen(info);
+    va_list va;
+    va_start(va, format);
+    __sgl_sprintf(p, format, va);
+    va_end(va);
+    out_dev = sgl_device_get_stdout();
+    if(out_dev != NULL) {
+        out_dev->put(buffer);
+    }
+}
 
 #endif

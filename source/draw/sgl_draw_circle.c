@@ -24,9 +24,20 @@
  */
 
 #include "./sgl_draw_circle.h"
-#include "stdio.h"
+#include "../libs/sgl_math.h"
 
 
+/**
+ * @brief Draws a solid circle on the specified surface (surf) without anti-aliasing.
+ * 
+ * @param surf: Pointer to the surface on which the circle will be drawn.
+ * @param cx: X-coordinate of the circle's center.
+ * @param cy: Y-coordinate of the circle's center.
+ * @param radius: Radius of the circle.
+ * @param color: The color of the circle to be drawn.
+ * 
+ * @return none
+ */
 void sgl_draw_circle_solid_noaa(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color)
 {
     int x = -radius, y = 0, err = 2-2*radius;
@@ -43,6 +54,19 @@ void sgl_draw_circle_solid_noaa(sgl_surf_t *surf, int16_t cx, int16_t cy, int ra
     } while (x < 0);
 }
 
+
+/**
+ * @brief Draws a solid circle on the specified surface.
+ * 
+ * @param surf: Pointer to the surface on which to draw.
+ * @param cx: X-coordinate of the circle's center.
+ * @param cy: Y-coordinate of the circle's center.
+ * @param radius: The radius of the circle.
+ * @param fg_color: The foreground color for the circle's edge and blending.
+ * @param bg_color: The background color for the circle's fill, used in color mixing.
+ * 
+ * @return none
+ */
 void sgl_draw_circle_solid(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t fg_color, sgl_color_t bg_color)
 {
     int x = radius, y = 0, err = 0, i, mix;
@@ -66,6 +90,28 @@ void sgl_draw_circle_solid(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius,
 }
 
 
+/**
+ * @brief Draws an empty circle on the specified surface.
+ *
+ * @param surf Pointer to the drawing surface, i.e., the canvas.
+ * @param cx The x-coordinate of the circle's center.
+ * @param cy The y-coordinate of the circle's center.
+ * @param radius The radius of the circle.
+ * @param fg_color The color to be mixed with the background for the circle outline.
+ * @param bg_color The background color.
+ *
+ * @return none
+ * 
+ * This function uses Bresenham's algorithm to draw an empty circle with anti-aliasing.
+ * It iteratively calculates and sets the points along the circle boundary,
+ * mixing the foreground and background colors based on their distance from the circle center.
+ *
+ * Each iteration consists of two parts:
+ * 1. Draw four points on the current octant.
+ * 2. Update the error term and move either the x or y coordinate accordingly.
+ *
+ * The process stops when the x-coordinate reaches zero, indicating that the entire circle has been drawn.
+ */
 void sgl_draw_circle_hollow(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t fg_color, sgl_color_t bg_color)
 {
     int x = radius, y = 0;
@@ -199,6 +245,41 @@ void sgl_draw_circle_img_transp_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, 
 }
 
 
+void sgl_draw_circle_solid_transp_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color, uint8_t alpha)
+{
+    int x = radius, y = 0, err = 0, i, mix;
+    for (radius = 2*radius+1; x > 0; err += ++y*2-1) {
+        if (err+2*x+1 < radius) err += ++x*2-1;
+        for ( ; err > 0; err -= --x*2+1) {
+            mix = 255*err/radius;
+            sgl_draw_point(surf, cx+x, cy+y, 
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+x, cy+y),
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+x, cy+y), color, mix),alpha)); 
+            sgl_draw_point(surf, cx-y, cy+x, 
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-y, cy+x),
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-y, cy+x), color, mix),alpha)); 
+            sgl_draw_point(surf, cx-x, cy-y, 
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-x, cy-y),
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-x, cy-y), color, mix),alpha)); 
+            sgl_draw_point(surf, cx+y, cy-x, 
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+y, cy-x),
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+y, cy-x), color, mix),alpha));
+        }
+        for (i = x; i > 0; i--) {
+            sgl_draw_point(surf, cx+i, cy+y, 
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+i, cy+y), color, alpha));
+            sgl_draw_point(surf, cx-y, cy+i, 
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-y, cy+i), color, alpha));
+            sgl_draw_point(surf, cx-i, cy-y, 
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-i, cy-y), color, alpha)); 
+            sgl_draw_point(surf, cx+y, cy-i, 
+                            sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+y, cy-i), color, alpha));
+        }
+    }
+    sgl_draw_point(surf, cx, cy, 
+                    sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx, cy), color, alpha));
+}
+
 
 void sgl_draw_circle_solid_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color)
 {
@@ -221,7 +302,6 @@ void sgl_draw_circle_solid_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int r
     }
     sgl_draw_point(surf, cx, cy, color);
 }
-
 
 void sgl_draw_circle_hollow_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color)
 {
@@ -254,6 +334,68 @@ void sgl_draw_circle_hollow_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int 
                 sgl_draw_point(surf, cx+y, cy+x2, sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx+y, cy+x2), color, mix));
                 sgl_draw_point(surf, cx-x2, cy+y, sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx-x2, cy+y), color, mix));
                 sgl_draw_point(surf, cx-y, cy-x2, sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx-y, cy-x2), color, mix));
+            } 
+            err -= --y*2-1; 
+        }
+    }
+}
+
+
+void sgl_draw_circle_hollow_transp_on_bg(sgl_surf_t *surf, int16_t cx, int16_t cy, int radius, sgl_color_t color, uint8_t alpha)
+{
+    int x = radius, y = 0;
+    int mix, x2, e2, err = 2-2*radius;
+    radius = 1-err;
+    while(1) {
+        mix = 255*sgl_abs(err+2*(x+y)-2)/radius;
+        sgl_draw_point(surf, cx+x, cy-y, 
+                        sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+x, cy-y),
+                                        sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx+x, cy-y), color, mix), alpha));
+        sgl_draw_point(surf, cx+y, cy+x, 
+                        sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+y, cy+x),
+                                        sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx+y, cy+x), color, mix), alpha));
+        sgl_draw_point(surf, cx-x, cy+y, 
+                        sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-x, cy+y),
+                                        sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx-x, cy+y), color, mix), alpha));
+        sgl_draw_point(surf, cx-y, cy-x, 
+                        sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-y, cy-x),
+                                        sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx-y, cy-x), color, mix), alpha));
+        if (x == 0)
+            break;
+        e2 = err; x2 = x;
+        if (err > y) {
+            mix = 255*(err+2*x-1)/radius;
+            if (mix < 255) {
+                sgl_draw_point(surf, cx+x, cy-y+1, 
+                                sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+x, cy-y+1),
+                                                sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx+x, cy-y+1), color, mix), alpha));
+                sgl_draw_point(surf, cx+y-1, cy+x, 
+                                sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+y-1, cy+x),
+                                                sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx+y-1, cy+x), color, mix), alpha));
+                sgl_draw_point(surf, cx-x, cy+y-1, 
+                                sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-x, cy+y-1),
+                                                sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx-x, cy+y-1), color, mix), alpha));
+                sgl_draw_point(surf, cx-y+1, cy-x, 
+                                sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-y+1, cy-x),
+                                                sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx-y+1, cy-x), color, mix), alpha));
+            }
+            err -= --x*2-1; 
+        }
+        if (e2 <= x2--) {
+            mix = 255*(1-2*y-e2)/radius;
+            if (mix < 255) {
+                sgl_draw_point(surf, cx+x2, cy-y, 
+                                sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+x2, cy-y),
+                                                sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx+x2, cy-y), color, mix), alpha));
+                sgl_draw_point(surf, cx+y, cy+x2, 
+                                sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx+y, cy+x2),
+                                                sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx+y, cy+x2), color, mix), alpha));
+                sgl_draw_point(surf, cx-x2, cy+y, 
+                                sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-x2, cy+y),
+                                                sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx-x2, cy+y), color, mix), alpha));
+                sgl_draw_point(surf, cx-y, cy-x2, 
+                                sgl_color_mixer(sgl_get_draw_buffer_color(surf,cx-y, cy-x2),
+                                                sgl_color_mixer(sgl_get_draw_buffer_color(surf, cx-y, cy-x2), color, mix), alpha));
             } 
             err -= --y*2-1; 
         }
@@ -495,15 +637,4 @@ void sgl_draw_circle_thick_on_bg( sgl_surf_t *surf,
             }
         }
     }
-}
-
-
-sgl_pos_t sgl_circle_pos_by_angle(int16_t r, int16_t angle)
-{
-    sgl_pos_t ret;
-    sgl_trig_t trig;
-    trig = sgl_trig(angle * 0x4000 / 90);
-    ret.x = trig.sin_h  * r / 32766;
-    ret.y = trig.cos_h * r / 32766;
-    return ret;
 }

@@ -24,7 +24,17 @@
  */
 
 #include "./sgl_number.h"
-#include "stdio.h"
+#include "./sgl_obj.h"
+#include "./sgl_page.h"
+#include "./sgl_device.h"
+#include "./sgl_task.h"
+#include "../libs/sgl_mem.h"
+#include "../libs/sgl_string.h"
+#include "../draw/sgl_draw.h"
+#include "../draw/sgl_draw_rect.h"
+#include "../draw/sgl_draw_font.h"
+
+static void sgl_number_event_cb(sgl_obj_t* obj);
 
 int sgl_number_init(sgl_number_t *number, sgl_obj_t* parent, double value)
 {
@@ -36,13 +46,13 @@ int sgl_number_init(sgl_number_t *number, sgl_obj_t* parent, double value)
     number->font = NULL;
     obj = &number->obj;
     obj->parent = parent;
+    obj->dirty = 1;
     obj->selected = 0;
     obj->hide = 0;
-    obj->obj_type = SGL_OBJ_NUMBER;
+    obj->draw_cb = sgl_number_event_cb;
     obj->event_data = NULL;
     obj->ev_stat = SGL_EVENT_FORCE_DRAW;
     sgl_page_add_obj(parent, obj);
-    sgl_page_add_dirty_obj(parent, obj);
     return 0;
 }
 
@@ -53,7 +63,7 @@ sgl_obj_t* sgl_number_create(sgl_obj_t* parent, double value)
     if(parent == NULL) {
         return NULL;
     }
-    number = (sgl_number_t *)sgl_alloc(sizeof(sgl_number_t));
+    number = (sgl_number_t *)sgl_malloc(sizeof(sgl_number_t));
     if(number == NULL)
         return NULL;
     ret = sgl_number_init(number, parent, value);
@@ -75,7 +85,7 @@ void sgl_number_set_value(sgl_obj_t* obj, double value)
     if(value != number->value) {
         number->value = value;
         sgl_obj_set_event_status(obj, SGL_EVENT_FORCE_DRAW);
-        sgl_page_add_dirty_obj(obj->parent, obj);
+        obj->dirty = 1;
     }
 }
 
@@ -85,7 +95,7 @@ void sgl_number_set_text_align(sgl_obj_t *obj, sgl_align_type_e align)
     number->align = align;
 }
 
-void sgl_number_draw(sgl_obj_t* obj)
+static void sgl_number_draw(sgl_obj_t* obj)
 {
     sgl_number_t *number = container_of(obj, sgl_number_t, obj);
     char text[65] = { '0', '\0' };
@@ -96,18 +106,18 @@ void sgl_number_draw(sgl_obj_t* obj)
     sgl_surf_t *surf = sgl_get_active_surf(obj);
     sgl_img_t *bg_img = sgl_obj_get_bgimg(obj->parent);
     sgl_widget_buffer_valid(obj);
-    if(obj->style.radius) {
+    if(obj->style->radius) {
         if(bg_img == NULL) {
-            sgl_draw_buffer_clear(surf, obj->parent->style.body_color);
-            sgl_draw_round_rect_solid(surf, rect, obj->style.radius, obj->style.body_color, obj->parent->style.body_color);
+            sgl_draw_buffer_clear(surf, obj->parent->style->body_color);
+            sgl_draw_round_rect_solid(surf, rect, obj->style->radius, obj->style->body_color, obj->parent->style->body_color);
         }
         else {
-            sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->style.bg_img);
-            sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style.radius, obj->style.body_color);
+            sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->bg_img);
+            sgl_draw_round_rect_solid_on_bg(surf, rect, obj->style->radius, obj->style->body_color);
         }
     }
     else {
-        sgl_draw_buffer_clear(surf, obj->style.body_color);
+        sgl_draw_buffer_clear(surf, obj->style->body_color);
     }
     if(obj->hide) return;
     if(number->font) {
@@ -117,14 +127,14 @@ void sgl_number_draw(sgl_obj_t* obj)
         pos.x = sgl_widget_draw_ofs_x(pos.x);
         pos.y = sgl_widget_draw_ofs_y(pos.y);
         if(bg_img == NULL)
-            sgl_draw_font_string(surf, pos.x, pos.y, text, obj->style.text_color, obj->style.body_color, number->font);
+            sgl_draw_font_string(surf, pos.x, pos.y, text, obj->style->text_color, obj->style->body_color, number->font);
         else
-            sgl_draw_font_string_on_bg(surf, pos.x, pos.y, text, obj->style.text_color, number->font);
+            sgl_draw_font_string_on_bg(surf, pos.x, pos.y, text, obj->style->text_color, number->font);
     }
     sgl_widget_draw_buffer_flush(obj, surf);
 }
 
-void sgl_number_event_cb(sgl_obj_t *obj)
+static void sgl_number_event_cb(sgl_obj_t *obj)
 {
     if(obj->ev_stat == SGL_EVENT_PRESSED) {
         sgl_obj_event_cb(obj);

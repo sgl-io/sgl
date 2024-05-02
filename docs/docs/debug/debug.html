@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="zh-CN">
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>调试 &mdash; SGL 0.1 文档</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/togglebutton.css" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+        <script>let toggleHintShow = 'Click to show';</script>
+        <script>let toggleHintHide = 'Click to hide';</script>
+        <script>let toggleOpenOnPrint = 'true';</script>
+        <script src="../../_static/togglebutton.js"></script>
+        <script src="../../_static/translations.js"></script>
+        <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="索引" href="../../genindex.html" />
+    <link rel="search" title="搜索" href="../../search.html" />
+    <link rel="prev" title="单选框" href="../guide/radiobtn.html" />
+    <link href="../../_static/style.css" rel="stylesheet" type="text/css">
+
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            SGL
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../introduce.html">SGL简介</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../transplant.html">SGL使用指南</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guide.html">SGL开发手册</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">调试</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#id2">添加打印</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">SGL</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">调试</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../_sources/docs/debug/debug.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="id1">
+<h1>调试<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h1>
+<section id="id2">
+<h2>添加打印<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
+<p>在SGL中添加信息打印需要注册输出设备，SGL的打印信息最终将会以注册的底层接口输出。使用SGL的打印步骤如下：</p>
+<ul>
+<li><ol class="arabic simple">
+<li><p>注册底层输出函数，一般为USART或者UART等设备，用户需要使用sgl_device_stdout_register()函数来注册打印的输出设备，如下所示：</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="nb">int</span> <span class="n">stdout_device</span><span class="p">(</span><span class="n">char</span> <span class="o">*</span><span class="nb">str</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">return</span> <span class="n">printf</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="o">...</span>
+
+<span class="n">sgl_device_stdout_t</span> <span class="n">stdout_dev</span> <span class="o">=</span> <span class="p">{</span>
+                                <span class="o">.</span><span class="n">put</span> <span class="o">=</span> <span class="n">stdout_device</span><span class="p">,</span>
+                                <span class="p">};</span>
+
+<span class="n">sgl_device_stdout_register</span><span class="p">(</span><span class="o">&amp;</span><span class="n">stdout_dev</span><span class="p">);</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><ol class="arabic simple" start="2">
+<li><p>使用SGL_LOG相关宏来实现打印信息，SGL提供了下面一些打印等级：</p></li>
+</ol>
+<blockquote>
+<div><div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#define SGL_LOG_LEVEL_TRACE 0 </span><span class="cm">/**&lt; A lot of logs to give detailed information*/</span>
+<span class="cp">#define SGL_LOG_LEVEL_INFO  1 </span><span class="cm">/**&lt; Log important events*/</span>
+<span class="cp">#define SGL_LOG_LEVEL_WARN  2 </span><span class="cm">/**&lt; Log if something unwanted happened but didn&#39;t caused problem*/</span>
+<span class="cp">#define SGL_LOG_LEVEL_ERROR 3 </span><span class="cm">/**&lt; Only critical issue, when the system may fail*/</span>
+<span class="cp">#define SGL_LOG_LEVEL_USER  4 </span><span class="cm">/**&lt; Custom logs from the user*/</span>
+<span class="cp">#define SGL_LOG_LEVEL_NONE  5 </span><span class="cm">/**&lt; Do not log anything*/</span>
+<span class="cp">#define _SGL_LOG_LEVEL_NUM  6 </span><span class="cm">/**&lt; Number of log levels*/</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><ol class="arabic simple" start="3">
+<li><p>开启SGL_CONFIG_DEBUG宏</p></li>
+</ol>
+<blockquote>
+<div><p>在sgl_conf.h配置文件中设置SGL_CONFIG_DEBUG宏的值为1，并且需要设置打印等级SGL_CONFIG_LOG_LEVEL，默认为0</p>
+</div></blockquote>
+</li>
+<li><ol class="arabic simple" start="4">
+<li><p>打印信息</p></li>
+</ol>
+<blockquote>
+<div><p>可以使用SGL_LOG_INFO()宏来打印一些信息，例如：</p>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="n">SGL_LOG_INFO</span><span class="p">(</span><span class="s">&quot;Hello SGL!&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../guide/radiobtn.html" class="btn btn-neutral float-left" title="单选框" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; 版权所有 2024, li-shanwen.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

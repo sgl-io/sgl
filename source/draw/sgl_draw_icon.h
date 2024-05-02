@@ -36,6 +36,7 @@ void sgl_draw_icon_on_bg(sgl_surf_t *surf, int x, int y, sgl_color_t color, sgl_
 void sgl_draw_icon_transp(sgl_surf_t *surf, int x, int y, sgl_color_t color, sgl_color_t bg_color, sgl_icon_t *icon, uint8_t alpha);
 void sgl_draw_icon_transp_on_bg(sgl_surf_t *surf, int x, int y, sgl_color_t color, sgl_icon_t *icon, uint8_t alpha);
 
+void sgl_draw_icon_lines_on_bg(sgl_surf_t *surf, int x, int y, int lines_start, int lines_end, sgl_color_t color, sgl_icon_t *icon);
 
 #endif //__SGL_DRAW_ICON_H__
 

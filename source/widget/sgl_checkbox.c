@@ -24,7 +24,17 @@
  */
 
 #include "./sgl_checkbox.h"
-#include "stdio.h"
+#include "./sgl_obj.h"
+#include "./sgl_page.h"
+#include "./sgl_device.h"
+#include "./sgl_task.h"
+#include "../libs/sgl_mem.h"
+#include "../libs/sgl_string.h"
+#include "../draw/sgl_draw.h"
+#include "../draw/sgl_draw_rect.h"
+#include "../draw/sgl_draw_font.h"
+
+static void sgl_checkbox_event_cb(sgl_obj_t *obj);
 
 int sgl_checkbox_init(sgl_checkbox_t *checkbox, sgl_obj_t* parent, bool status)
 {
@@ -36,13 +46,13 @@ int sgl_checkbox_init(sgl_checkbox_t *checkbox, sgl_obj_t* parent, bool status)
     checkbox->font = NULL;
     obj = &checkbox->obj;
     obj->parent = parent;
+    obj->dirty = 1;
     obj->selected = 0;
     obj->hide = 0;
     obj->event_data = NULL;
     obj->ev_stat = SGL_EVENT_FORCE_DRAW;
-    obj->obj_type = SGL_OBJ_CHECKBOX;
+    obj->draw_cb = sgl_checkbox_event_cb;
     sgl_page_add_obj(parent, obj);
-    sgl_page_add_dirty_obj(parent, obj);
     return 0;    
 }
 
@@ -53,7 +63,7 @@ sgl_obj_t* sgl_checkbox_create(sgl_obj_t* parent, bool status)
     if(parent == NULL) {
         return NULL;
     }
-    checkbox = (sgl_checkbox_t *)sgl_alloc(sizeof(sgl_checkbox_t));
+    checkbox = (sgl_checkbox_t *)sgl_malloc(sizeof(sgl_checkbox_t));
     if(checkbox == NULL)
         return NULL;
     ret = sgl_checkbox_init(checkbox, parent, status);
@@ -68,7 +78,7 @@ void sgl_checkbox_set_status(sgl_obj_t *obj, bool status)
     sgl_checkbox_t *checkbox = container_of(obj, sgl_checkbox_t, obj);
     if(status != checkbox->status) {
         checkbox->status = status;
-        sgl_page_add_dirty_obj(obj->parent, obj);
+        obj->dirty = 1;
     }
 }
 
@@ -91,7 +101,7 @@ void sgl_checkbox_set_text(sgl_obj_t *obj, const char* text)
     checkbox->text = text;
 }
 
-void sgl_checkbox_draw(sgl_obj_t *obj)
+static void sgl_checkbox_draw(sgl_obj_t *obj)
 {
     int _start_y = 0;
     int weight = obj->size.h / 6;
@@ -100,24 +110,24 @@ void sgl_checkbox_draw(sgl_obj_t *obj)
     sgl_widget_buffer_valid(obj);
     sgl_surf_t *surf = sgl_get_active_surf(obj);
     sgl_img_t *bg_img = sgl_obj_get_bgimg(obj->parent);
-    sgl_draw_obj_buffer_clear(surf, obj, obj->parent->style.body_color);
+    sgl_draw_obj_buffer_clear(surf, obj, obj->parent->style->body_color);
     rect.x2 = rect.x1 + obj->size.h;
     if(bg_img == NULL)
-        sgl_draw_rect_solid(surf, rect, obj->style.body_color);
+        sgl_draw_rect_solid(surf, rect, obj->style->body_color);
     else
-        sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->style.bg_img);
+        sgl_draw_obj_buffer_pick_img(surf, obj, obj->parent->bg_img);
     if(obj->hide) return;
     rect.x1 = sgl_widget_draw_ofs_x(weight);
     rect.x2 = sgl_widget_draw_ofs_x(obj->size.h - weight);
     rect.y1 = sgl_widget_draw_ofs_y(weight);
     rect.y2 = sgl_widget_draw_ofs_y(obj->size.h - weight);
-    sgl_draw_rect_solid(surf, rect, obj->parent->style.body_color);
+    sgl_draw_rect_solid(surf, rect, obj->parent->style->body_color);
     if(checkbox->status) {
         rect.x1 = sgl_widget_draw_ofs_x(weight * 2);
         rect.x2 = sgl_widget_draw_ofs_x(obj->size.h - weight * 2);
         rect.y1 = sgl_widget_draw_ofs_y(weight * 2);
         rect.y2 = sgl_widget_draw_ofs_y(obj->size.h - weight * 2);
-        sgl_draw_rect_solid(surf, rect, obj->style.body_color);
+        sgl_draw_rect_solid(surf, rect, obj->style->body_color);
     }
     if(checkbox->text && checkbox->font) {
         _start_y = sgl_widget_draw_ofs_y((obj->size.h - sgl_text_height(checkbox->font))/2) - 1;
@@ -126,8 +136,8 @@ void sgl_checkbox_draw(sgl_obj_t *obj)
                                 sgl_widget_draw_ofs_x(obj->size.h + 2), 
                                 _start_y, 
                                 checkbox->text, 
-                                obj->style.text_color, 
-                                obj->parent->style.body_color, 
+                                obj->style->text_color, 
+                                obj->parent->style->body_color, 
                                 checkbox->font
                                 );
         else
@@ -135,16 +145,16 @@ void sgl_checkbox_draw(sgl_obj_t *obj)
                                 sgl_widget_draw_ofs_x(obj->size.h + 2), 
                                 _start_y, 
                                 checkbox->text, 
-                                obj->style.text_color, 
+                                obj->style->text_color, 
                                 checkbox->font
                                 );
     }
-    sgl_draw_obj_selected(obj, surf, rect, obj->style.body_color);
+    sgl_draw_obj_selected(obj, surf, rect, obj->style->body_color);
     sgl_widget_draw_buffer_flush(obj, surf);
 }
 
 
-void sgl_checkbox_event_cb(sgl_obj_t *obj)
+static void sgl_checkbox_event_cb(sgl_obj_t *obj)
 {
     sgl_checkbox_t *checkbox = container_of(obj, sgl_checkbox_t, obj);
     if(obj->ev_stat == SGL_EVENT_PRESSED) {

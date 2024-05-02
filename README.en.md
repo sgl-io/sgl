@@ -1,7 +1,7 @@
 # sgl
 
 #### Description
-SGL (Swift Graphics Library)是一种轻量快速的图形库，该库旨在为MCU级别的处理器提供一美观轻量的GUI（Graphics User Interface).
+SGL (Small Graphics Library)是一种轻量快速的图形库，该库旨在为MCU级别的处理器提供一美观轻量的GUI（Graphics User Interface).
 
 #### Software Architecture
 Software architecture description

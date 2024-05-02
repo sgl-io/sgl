@@ -23,15 +23,16 @@
  * SOFTWARE.
  */
 
-
-//是否开启DEBUG模式：TODO
 #define SGL_CONFIG_DEBUG                      0
+#define SGL_CONFIG_LOG_LEVEL                  0
+
 
 //开启动画：TODO
 #define SGL_CONFIG_POWERON_ANIM               0
 
 //配置字体抗锯齿深度，默认采用4bit抗锯齿
 #define SGL_CONFIG_FONT_PIXEL_BIT             4
+
 
 //显示屏面板的像素颜色深度，默认为32bit
 #define SGL_CONFIG_PANEL_PIXEL_DEPTH          32
@@ -45,13 +46,21 @@
 //RGB颜色交换
 #define SGL_CONFIG_COLOR16_SWAP               0
 
-//1: 开平方函数使用newton
-//2: 开平方函数使用fast
-#define SGL_CONFIG_SQRT_ALGO                  2
-
 //1: standard混色
 //2: fast混色
 #define SGL_CONFIG_MIXER_TYPE                 2
+
+//0: heap_0
+//1: heap_1
+//2: heap_2
+//3: heap_3
+//4: heap_4
+//5: heap_tlsf
+//6: libc
+#define SGL_CONFIG_HEAP_POLICY                5
+//定义内存池的大小，单位KByte
+#define SGL_CONFIG_HEAP_POOL_SIZE             64
+
 
 //定义事件的队列深度
 #define SGL_CONFIG_EVQUEUE_DEPTH              16
@@ -59,9 +68,12 @@
 //定义任务的队列深度
 #define SGL_CONFIG_TASKQUEUE_DEPTH            8
 
+
 //是否开启SGL字体
 #define SGL_CONFIG_FONT_CONSOLAS12            1
 #define SGL_CONFIG_FONT_CONSOLAS15            1
 #define SGL_CONFIG_FONT_SONG10                1
 #define SGL_CONFIG_FONT_SONG23                1
-#define SGL_CONFIG_FONT_CASCADIA_MONO         1
+#define SGL_CONFIG_FONT_CASCADIA_MONO17       1
+
+#define SGL_CONFIG_TEXT_UTF8                  0

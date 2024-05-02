@@ -30,6 +30,8 @@
 /*
 * height: 24 pixel
 */
+
+#if (SGL_CONFIG_AWESOME23)
 static const uint8_t sgl_awesomw_h23_bitmap[] = {
 
 /*  */
@@ -16398,3 +16400,5 @@ void sgl_draw_awesome23(sgl_surf_t *surf, int hex_idx, int x, int y, sgl_color_t
         }
     }
 }
+
+#endif

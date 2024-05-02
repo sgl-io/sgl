@@ -50,9 +50,14 @@ extern sgl_font_t song10;
 extern sgl_font_t song23;
 #endif
 
-#if(SGL_CONFIG_FONT_CASCADIA_MONO == 1)
+#if(SGL_CONFIG_FONT_CASCADIA_MONO17 == 1)
 extern sgl_font_t cascadia_mono17;
 #endif
+
+#if(SGL_CONFIG_FONT_SONG12 == 1)
+extern sgl_font_t song12;
+#endif
+
 
 #ifdef __cplusplus
 }

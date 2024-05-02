@@ -23,17 +23,56 @@
  * SOFTWARE.
  */
 
-#include "./sgl_core.h"
+#include "./sgl_device.h"
+#include "./sgl_event.h"
+#include "./sgl_page.h"
 
+/**
+ * This variable points to the surface of an activity and is only assigned 
+ * a value when registering a new display screen
+*/
 static sgl_surf_t sgl_active_surf;
+
+/**
+ * pointer to devices used for debugging output
+*/
+static sgl_device_stdout_t *stdout = NULL;
+
+/**
+ * This pointer points to the active panel, and this value will only be assigned 
+ * when a new display screen is registered
+*/
 sgl_device_panel_t *sgl_active_panel = NULL;
+
+/**
+ * This pointer points to an input device, which can be a mouse, keyboard, touch screen, etc
+*/
 sgl_device_input_t *sgl_active_input = NULL;
 
+
+/**
+ * @brief The callback function of the input device, in the interrupt function of the 
+ *        output device, you should call this function to send input event messages to the system
+ * 
+ * @param data:  Incoming parameters
+ * 
+ * @return none
+*/
 void sgl_device_input_handle(void *data)
 {
     sgl_event_queue_push(sgl_active_input->get(data));
 }
 
+
+/**
+ * @brief To register the display screen and input device, you should call it after system initialization 
+ *        and check the return value to see if the registration was successful
+ * 
+ * @param panel:  Display device structure
+ * @param input:  Input device structure
+ * 
+ * @return 0 is OK, otherwise is failed
+*/
 int sgl_device_register(sgl_device_panel_t *panel, sgl_device_input_t *input)
 {
     if(panel->xres == 0 || panel->yres == 0) {
@@ -65,11 +104,29 @@ int sgl_device_register(sgl_device_panel_t *panel, sgl_device_input_t *input)
     return 0;
 }
 
+
+/**
+ * @brief Get the active display device, this function will return a pointer to the structure of the active device
+ * 
+ * @param none
+ * 
+ * @return sgl_device_panel_t: pointer to the structure of the active device
+*/
 sgl_device_panel_t* sgl_get_device_panel(void)
 {
     return sgl_active_panel;
 }
 
+
+/**
+ * @brief Get the surface of the activity, which is a special function. For a complete frame buffer device, 
+ *        return the size of the surface's rows and columns as the size of the entire frame buffer. 
+ *        For a non complete frame buffer device, return the size of the surface's rows and columns as the size of an object
+ * 
+ * @param obj: an object
+ * 
+ * @return sgl_surf_t: pointer to active surface
+*/
 sgl_surf_t* sgl_get_active_surf(sgl_obj_t *obj)
 {
 #if SGL_CONFIG_FRAMEBUFFER_MMAP
@@ -81,8 +138,43 @@ sgl_surf_t* sgl_get_active_surf(sgl_obj_t *obj)
 #endif
 }
 
+
+/**
+ * @brief Set the size of the surface
+ * 
+ * @param width: width of the surface
+ * @param height: height of the surface
+ * 
+ * @return none
+*/
 void sgl_set_active_surf_size(int16_t width, int16_t height)
 {
     sgl_active_surf.size.w = width;
     sgl_active_surf.size.h = height;
+}
+
+
+/**
+ * @brief Register an output device for debugging
+ * 
+ * @param device: Available output device
+ * 
+ * @return none
+*/
+void sgl_device_stdout_register(sgl_device_stdout_t *device)
+{
+    stdout = device;
+}
+
+
+/**
+ * @brief Get the pointer to device for debugging output
+ * 
+ * @param none
+ * 
+ * @return pointer to available output device
+*/
+sgl_device_stdout_t* sgl_device_get_stdout(void)
+{
+    return stdout;
 }

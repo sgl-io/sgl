@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>用户指导 &mdash; SGL 0.1 文档</title>
+  <title>SGL开发手册 &mdash; SGL 0.1 文档</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css" />
       <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css" />
@@ -31,6 +31,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="索引" href="../genindex.html" />
     <link rel="search" title="搜索" href="../search.html" />
+    <link rel="next" title="页面" href="guide/page.html" />
     <link rel="prev" title="SGL使用指南" href="transplant.html" />
     <link href="../_static/style.css" rel="stylesheet" type="text/css">
 
@@ -59,10 +60,19 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="introduce.html">SGL简介</a></li>
 <li class="toctree-l1"><a class="reference internal" href="transplant.html">SGL使用指南</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">用户指导</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#id2">添加按钮</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SGL开发手册</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/page.html">页面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/button.html">按钮</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/label.html">标签</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/app_icon.html">应用图标</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/switch.html">开关按钮</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/arcbar.html">弧形指示器</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/pgsbar.html">进度条</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/checkbox.html">勾选框</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/radiobtn.html">单选框</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="debug/debug.html">调试</a></li>
 </ul>
 
         </div>
@@ -79,7 +89,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">用户指导</li>
+      <li class="breadcrumb-item active">SGL开发手册</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/docs/guide.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -89,54 +99,47 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="id1">
-<h1>用户指导<a class="headerlink" href="#id1" title="Permalink to this heading">¶</a></h1>
-<section id="id2">
-<h2>添加按钮<a class="headerlink" href="#id2" title="Permalink to this heading">¶</a></h2>
-<p>首先定义一个回调函数，该回调函数如下所示：</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">btn_event</span><span class="p">(</span><span class="n">sgl_obj_t</span><span class="w"> </span><span class="o">*</span><span class="n">obj</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
-<span class="linenos"> 2</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 3</span><span class="w">     </span><span class="k">if</span><span class="p">(</span><span class="n">sgl_obj_get_event_status</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SGL_EVENT_PRESSED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 4</span><span class="w">         </span><span class="p">...</span>
-<span class="linenos"> 5</span><span class="w">         </span><span class="c1">//your code</span>
-<span class="linenos"> 6</span><span class="w">     </span><span class="p">}</span>
-<span class="linenos"> 7</span><span class="w">     </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="p">(</span><span class="n">sgl_obj_get_event_status</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SGL_EVENT_RELEASED</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="linenos"> 8</span><span class="w">         </span><span class="p">...</span>
-<span class="linenos"> 9</span><span class="w">         </span><span class="c1">//your code</span>
-<span class="linenos">10</span><span class="w">     </span><span class="p">};</span>
-<span class="linenos">11</span><span class="w"> </span><span class="p">}</span>
-</pre></div>
+  <section id="sgl">
+<h1>SGL开发手册<a class="headerlink" href="#sgl" title="Permalink to this heading">¶</a></h1>
+<p>下面将详细讲解如何使用SGL来开发GUI界面，</p>
+<div class="admonition tip">
+<p class="admonition-title">小技巧</p>
+<p>SGL官方技术交流群：544602724，欢迎大家加入！！！</p>
 </div>
-<p>然后在main.c函数中添加如下代码用户创建按钮：
-1. 静态创建</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="w"> </span><span class="c1">//定义button样式</span>
-<span class="linenos"> 2</span><span class="w"> </span><span class="n">sgl_style_t</span><span class="w"> </span><span class="n">btn_style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{.</span><span class="n">body_color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SGL_BLUE</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">text_color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SGL_RED</span><span class="p">,</span><span class="w"> </span><span class="p">.</span><span class="n">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">25</span><span class="p">};</span>
-<span class="linenos"> 3</span><span class="w"> </span><span class="c1">//定义一个button结构体</span>
-<span class="linenos"> 4</span><span class="w"> </span><span class="n">sgl_button_t</span><span class="w"> </span><span class="n">button</span><span class="p">;</span>
-<span class="linenos"> 5</span><span class="w"> </span><span class="c1">//定义一个button的obj指针</span>
-<span class="linenos"> 6</span><span class="w"> </span><span class="n">sgl_obj_t</span><span class="w"> </span><span class="o">*</span><span class="n">btn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">button</span><span class="p">.</span><span class="n">obj</span><span class="p">;</span>
-<span class="linenos"> 7</span><span class="w"> </span><span class="c1">//按钮初始化</span>
-<span class="linenos"> 8</span><span class="w"> </span><span class="n">sgl_button_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">button</span><span class="p">,</span><span class="w"> </span><span class="n">sgl_scr_active</span><span class="p">());</span>
-<span class="linenos"> 9</span><span class="w"> </span><span class="c1">//设置按钮大小，注意：当绘图缓存的大小不大时，按钮的大小不应该设置过大</span>
-<span class="linenos">10</span><span class="w"> </span><span class="n">sgl_obj_set_size</span><span class="p">(</span><span class="n">btn</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">50</span><span class="p">);</span>
-<span class="linenos">11</span><span class="w"> </span><span class="c1">//设置按钮的位置，这里使用相对位置</span>
-<span class="linenos">12</span><span class="w"> </span><span class="n">sgl_obj_set_align</span><span class="p">(</span><span class="n">btn</span><span class="p">,</span><span class="w"> </span><span class="n">SGL_ALIGN_CENTER_RIGHT</span><span class="p">);</span>
-<span class="linenos">13</span><span class="w"> </span><span class="c1">//设置按钮的样式</span>
-<span class="linenos">14</span><span class="w"> </span><span class="n">sgl_obj_set_style</span><span class="p">(</span><span class="n">btn</span><span class="p">,</span><span class="w"> </span><span class="n">btn_style</span><span class="p">);</span>
-<span class="linenos">15</span><span class="w"> </span><span class="c1">//设置按钮的事件回调</span>
-<span class="linenos">16</span><span class="w"> </span><span class="n">sgl_obj_set_event_cb</span><span class="p">(</span><span class="n">btn</span><span class="p">,</span><span class="w"> </span><span class="n">btn_event</span><span class="p">,</span><span class="w"> </span><span class="nb">NULL</span><span class="p">);</span>
-<span class="linenos">17</span><span class="w"> </span><span class="c1">//设置按钮的toggle颜色</span>
-<span class="linenos">18</span><span class="w"> </span><span class="n">sgl_button_set_toggle_color</span><span class="p">(</span><span class="n">btn</span><span class="p">,</span><span class="w"> </span><span class="n">SGL_GREEN</span><span class="p">);</span>
-<span class="linenos">19</span><span class="w"> </span><span class="c1">//设置按钮的字体</span>
-<span class="linenos">20</span><span class="w"> </span><span class="n">sgl_button_set_font</span><span class="p">(</span><span class="n">btn</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">song23</span><span class="p">);</span>
-<span class="linenos">21</span><span class="w"> </span><span class="c1">//设置按钮的text</span>
-<span class="linenos">22</span><span class="w"> </span><span class="n">sgl_button_set_text</span><span class="p">(</span><span class="n">btn</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Button&quot;</span><span class="p">);</span>
-</pre></div>
+<div class="toctree-wrapper compound">
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="guide/page.html">页面</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/page.html#id2">创建页面</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/page.html#id3">设置页面背景图</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/button.html">按钮</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/button.html#id2">添加按钮对象</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/button.html#id3">图片按钮</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/label.html">标签</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/label.html#id2">添加标签</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/label.html#id3">图片标签</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/label.html#id4">标签点击事件</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/app_icon.html">应用图标</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/app_icon.html#app">添加APP图标启动器</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/switch.html">开关按钮</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="guide/switch.html#id2">添加开关按钮对象</a></li>
+<li class="toctree-l2"><a class="reference internal" href="guide/switch.html#id3">图片开关</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="guide/arcbar.html">弧形指示器</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/pgsbar.html">进度条</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/checkbox.html">勾选框</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guide/radiobtn.html">单选框</a></li>
+</ul>
 </div>
-<ol class="arabic simple" start="2">
-<li><p>动态创建（MCU还未实现）</p></li>
-</ol>
-</section>
 </section>
 
 
@@ -144,6 +147,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="transplant.html" class="btn btn-neutral float-left" title="SGL使用指南" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="guide/page.html" class="btn btn-neutral float-right" title="页面" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

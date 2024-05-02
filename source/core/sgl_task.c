@@ -23,17 +23,29 @@
  * SOFTWARE.
  */
 
-#include "./sgl_core.h"
-#include <string.h>
-#include "stdio.h"
-#include "../draw/sgl_draw.h"
+#include "sgl_conf.h"
+#include "./sgl_task.h"
+#include "./sgl_event.h"
+#include "../libs/sgl_string.h"
 
+/**
+ * Define task queue storage space to store created tasks, The purpose of using arrays is because data 
+ * does not generate memory fragments, while using dynamic memory allocation will generate a lot of 
+ * memory fragments, seriously affecting real-time performance
+*/
 static sgl_task_t sgl_task_queue[SGL_CONFIG_TASKQUEUE_DEPTH];
-
 
 static int16_t __queue_head = 0;
 static int16_t __queue_tail = 0;
 
+
+/**
+ * @brief check if the task queue is empty
+ * 
+ * @param none
+ * 
+ * @return bool: true is empty, false is not empty
+*/
 bool sgl_task_queue_is_empty(void)
 {
     if(__queue_head == __queue_tail) {
@@ -44,6 +56,14 @@ bool sgl_task_queue_is_empty(void)
     }
 }
 
+
+/**
+ * @brief check  if the task queue is full
+ * 
+ * @param none
+ * 
+ * @return bool: true is full, false is not full
+*/
 bool sgl_task_queue_is_full(void)
 {
     if(__queue_head == 0 && __queue_tail == (SGL_CONFIG_TASKQUEUE_DEPTH - 1)) {
@@ -57,6 +77,14 @@ bool sgl_task_queue_is_full(void)
     }
 }
 
+
+/**
+ * @brief Push a new task into the task queue
+ * 
+ * @param task: The task to be pushed
+ * 
+ * @return none
+*/
 void sgl_task_queue_push(sgl_task_t task)
 {
     if(task.task_fun == NULL)
@@ -70,9 +98,22 @@ void sgl_task_queue_push(sgl_task_t task)
     }
 }
 
+
+/**
+ * @brief Pop up a task from the task queue
+ * 
+ * @param none
+ * 
+ * @return sgl_task_t: Pop up tasks
+*/
 sgl_task_t sgl_task_queue_pop(void)
 {
     sgl_task_t task = sgl_task_queue[__queue_tail];
+    if(sgl_task_queue_is_empty()) {
+        task.task_fun = NULL;
+        task.data = NULL;
+        return task;
+    }
     if((__queue_tail - 1) < 0) {
         __queue_tail = (SGL_CONFIG_TASKQUEUE_DEPTH - 1);
     }
@@ -82,25 +123,17 @@ sgl_task_t sgl_task_queue_pop(void)
     return task;
 }
 
+
+/**
+ * @brief Clear all tasks in the task queue
+ * 
+ * @param none
+ * 
+ * @return none
+*/
 void sgl_task_queue_clear(void)
 {
     __queue_head = 0;
     __queue_tail = 0;
 }
 
-
-extern void sgl_event_handler(void);
-extern void sgl_active_page_dirty_handler(void);
-extern void sgl_animation_handler(void);
-
-
-void sgl_task_handler(void)
-{
-    sgl_event_handler();
-    sgl_active_page_dirty_handler();
-    sgl_animation_handler();
-    if(!sgl_task_queue_is_empty()) {
-        sgl_task_t task = sgl_task_queue_pop();
-        task.task_fun(task.data);
-    }
-}

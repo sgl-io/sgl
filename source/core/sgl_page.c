@@ -23,109 +23,176 @@
  * SOFTWARE.
  */
 
-#include "./sgl_core.h"
-#include "../sgl.h"
+#include "sgl_conf.h"
+#include "./sgl_obj.h"
+#include "./sgl_page.h"
+#include "./sgl_device.h"
+#include "./sgl_task.h"
+#include "../libs/sgl_mem.h"
+#include "../libs/sgl_string.h"
+#include "../draw/sgl_draw.h"
 
+static sgl_style_t page_default_style;
+
+/**
+ * Define a page pointer for an activity that always points to the active page. 
+ * When a page switches, this pointer will point to a new page
+*/
 sgl_obj_t *active_page = NULL;
 
 
+static void sgl_page_draw(sgl_obj_t *page);
+
+
+/**
+ * @brief Initialize a page, and whenever you create a page, you should call this function to initialize it
+ * 
+ * @param page: Newly created page structure address
+ * 
+ * @return none
+*/
 void sgl_page_init(sgl_obj_t *page)
 {
     page->pos.x = 0;
     page->pos.y = 0;
+    //set page size as panel x resolution
+    //set page size as panel y resolution
     page->size.w = sgl_get_device_panel()->xres;
     page->size.h = sgl_get_device_panel()->yres;
     page->event_fn = NULL;
     page->event_data = NULL;
     page->parent = NULL;
-    page->obj_type = SGL_OBJ_PAGE;
+    page->draw_cb = sgl_page_draw;
     page->ev_stat = SGL_EVENT_FORCE_DRAW;
+    page->dirty = 1;
     page->selected = 0;
-    page->style.text_color = SGL_CONFIG_PAGE_COLOR;
-    page->style.body_color = SGL_CONFIG_PAGE_COLOR;
+    //set background color, default is SGL_CONFIG_PAGE_COLOR
+    // you can change it in sgl_conf.h file 
+    sgl_style_set_body_color(&page_default_style, SGL_CONFIG_PAGE_COLOR);
+    sgl_style_set_text_color(&page_default_style, SGL_CONFIG_PAGE_COLOR);
+    sgl_style_set_radius(&page_default_style, 0);
+    page->style = &page_default_style;
+    //init object list
     sgl_list_init(&page->node);
-    sgl_list_init(&page->dirty);
+    //if active_page pointer is NULL, it means that no active page, so, set the active page as new page
     if(active_page == NULL) {
         active_page = page;
     }
 }
 
 
+/**
+ * @brief Creating pages in a dynamic way, you must check if the return value is NULL
+ * 
+ * @param none
+ * 
+ * @return sgl_obj_t pointer: Point to the address of the created page structure
+*/
 sgl_obj_t* sgl_page_create(void)
 {
-    sgl_obj_t *page = (sgl_obj_t*)sgl_alloc(sizeof(sgl_obj_t));
-    sgl_page_init(page);
-    return page;
+    sgl_page_t *page = (sgl_page_t*)sgl_malloc(sizeof(sgl_page_t));
+    if(page != NULL)
+        sgl_page_init(&page->obj);
+    sgl_list_init(&page->anim);
+    return &page->obj;
 }
 
+
+/**
+ * @brief Add an object to a page that must have already been initialized
+ * 
+ * @param page:  The page to which the object is added
+ * @param obj:   Object, usually a control, has already been initialized
+ * 
+ * @return none
+*/
 void sgl_page_add_obj(sgl_obj_t *page, sgl_obj_t *obj)
 {
     sgl_list_add_node_at_tail(&page->node, &obj->node);
 }
 
+
+/**
+ * @brief Delete an object from the page, which must already be on the page
+ * 
+ * @param obj:  Objects to be deleted
+ * 
+ * @return none
+*/
 void sgl_page_del_obj(sgl_obj_t *obj)
 {
     sgl_list_del_node(&obj->node);
 }
 
+
+/**
+ * @brief Get the linked header of the linked list of objects on the page
+ * 
+ * @param page:  Page containing object linked list
+ * 
+ * @return sgl_list_node_t pointer: Pointer to the header of an object linked list
+*/
 sgl_list_node_t* sgl_page_get_obj_head(sgl_obj_t *page)
 {
     return &page->node;
 }
 
-bool sgl_page_obj_is_in_list(sgl_obj_t* obj, sgl_list_node_t* list_head)
+
+/**
+ * @brief Determine whether an object is on the page
+ * 
+ * @param obj:  Operation object
+ *
+ * @return bool: true is in the list, false is not in the list
+*/
+bool sgl_page_obj_is_in_list(sgl_obj_t* obj)
 {
-    sgl_obj_t *current_obj;
-    sgl_list_node_t* current_node;
-    sgl_list_for_each(current_node, list_head) {
-        current_obj = container_of(current_node, struct sgl_obj, node);
-        if( current_obj ==  obj) {
-            return true;
-        }
+    if(obj->node.prev->next == &obj->node) {
+        return true;
     }
     return false;
 }
 
-void sgl_page_add_dirty_obj(sgl_obj_t *page, sgl_obj_t *obj)
+
+/**
+ * @brief Set the page style, this function can only set the background color to monochrome
+ * 
+ * @param page:  The page object
+ * @param style: background color style
+ * 
+ * @return none
+*/
+void sgl_page_set_style(sgl_obj_t *page, sgl_style_t *style)
 {
-    if(!obj->hide) {
-        if(!sgl_page_obj_is_in_dirty_list(obj, &page->dirty))
-            sgl_list_add_node_at_tail(&page->dirty, &obj->dirty);
-    }
+    page->style = style;
 }
 
-void sgl_page_del_dirty_obj(sgl_obj_t *obj)
+
+/**
+ * @brief Set the background image of the page
+ * 
+ * @param page:  The page object
+ * @param img:   Pointer to background image
+ * 
+ * @return none
+*/
+void sgl_page_set_background(sgl_obj_t *page, sgl_img_t *img)
 {
-    sgl_list_del_node(&obj->dirty);
+    page->bg_img = img;
 }
 
-sgl_list_node_t* sgl_page_get_dirty_obj_head(sgl_obj_t *page)
-{
-    return &page->dirty;
-}
 
-bool sgl_page_obj_is_in_dirty_list(sgl_obj_t* obj, sgl_list_node_t* list_head)
+/**
+ * @brief Refresh the color of the page to the screen. Users should not call this function as 
+ *        it is time-consuming
+ * 
+ * @param page: The page object
+ * 
+ * @return none
+*/
+static void sgl_page_flush_color(sgl_obj_t *page)
 {
-    sgl_obj_t *current_obj;
-    sgl_list_node_t* current_node;
-    sgl_list_for_each(current_node, list_head) {
-        current_obj = container_of(current_node, struct sgl_obj, dirty);
-        if( current_obj ==  obj) {
-            return true;
-        }
-    }
-    return false;
-}
-
-void sgl_page_set_color(sgl_obj_t *page, sgl_color_t color)
-{
-    page->style.text_color = color;
-    page->style.body_color = color;
-}
-
-void sgl_page_flush_color(sgl_obj_t *page)
-{
-    sgl_color_t color = page->style.body_color;
+    sgl_color_t color = page->style->body_color;
     sgl_surf_t *surf = sgl_get_active_surf(page);
     int width = page->size.w;
     int height = page->size.h;
@@ -151,15 +218,19 @@ void sgl_page_flush_color(sgl_obj_t *page)
 #endif
 }
 
-void sgl_page_set_background(sgl_obj_t *page, sgl_img_t *img)
-{
-    page->style.bg_img = img;
-}
 
-void sgl_page_flush_background(sgl_obj_t *page)
+/**
+ * @brief the background image of the page to the screen. Users should not call this function 
+ *        as it is time-consuming
+ * 
+ * @param page:  The page object
+ * 
+ * @return none
+*/
+static void sgl_page_flush_background(sgl_obj_t *page)
 {
     sgl_surf_t *surf = sgl_get_active_surf(page);
-    sgl_img_t *img = page->style.bg_img;
+    sgl_img_t *img = page->bg_img;
     sgl_color_t *cherry = (sgl_color_t*)img->bitmap;
     sgl_color_t *pick = surf->fb;
 #if SGL_CONFIG_FRAMEBUFFER_MMAP
@@ -192,28 +263,60 @@ void sgl_page_flush_background(sgl_obj_t *page)
 #endif
 }
 
+
+/**
+ * @brief Draw a page, this function is used to refresh the background or color of a page. 
+ *        When a page switches, this function will be called
+ * 
+ * @param page:  The page object
+ * 
+ * @return none
+*/
+static void sgl_page_draw(sgl_obj_t *page)
+{
+    if(page->bg_img == NULL) {
+        sgl_page_flush_color(page);
+    }
+    else {
+        sgl_page_flush_background(page);
+    }
+}
+
+
+/**
+ * @brief This function is used to switch pages. When switching pages, it will traverse all objects on the page. 
+ *        When an object is marked as dirty, it will be redrawn
+ * 
+ * @param data:  Private pointer
+ * 
+ * @return int: 0 is ok, 1 is error
+*/
 static int sgl_page_switch_task(void *data)
 {
     sgl_obj_t *current_obj;
     sgl_obj_t *page = (sgl_obj_t*)(data);
     sgl_list_node_t *current_node;
     sgl_list_node_t *root_node = &active_page->node;
-    if(page->style.bg_img == NULL) {
-        sgl_page_flush_color(page);
-    }
-    else {
-        sgl_page_flush_background(page);
-    }
+    sgl_page_draw(page);
     sgl_list_for_each(current_node, root_node) {
         current_obj = container_of(current_node, struct sgl_obj, node);
         if( current_obj->hide == 0 ) {
             sgl_obj_set_event_status(current_obj, SGL_EVENT_FORCE_DRAW);
-            sgl_page_add_dirty_obj(active_page, current_obj);
+            current_obj->dirty = 1;
         }
     }
     return 0;
 }
 
+
+/**
+ * @brief Set a page to the active page, and once this function is called, the display screen 
+ *        will switch to the set page
+ * 
+ * @param page:  The page object
+ * 
+ * @return none
+*/
 void sgl_page_set_active(sgl_obj_t *page)
 {
     sgl_task_t flust_page_task = { .task_fun = sgl_page_switch_task, .data = page, };
@@ -221,6 +324,14 @@ void sgl_page_set_active(sgl_obj_t *page)
     sgl_task_queue_push(flust_page_task);
 }
 
+
+/**
+ * @brief Get the current activity page, this function will return a pointer to the activity page
+ * 
+ * @param none
+ * 
+ * @return sgl_obj_t: pointer to active page
+*/
 sgl_obj_t *sgl_page_get_active(void)
 {
     return active_page;

@@ -25,8 +25,8 @@
 
 #include "../core/sgl_core.h"
 
-
-_const uint8_t sgl_ascii_consolas15_bitmap[2900] = {
+#if(SGL_CONFIG_FONT_CONSOLAS15 == 1)
+static const uint8_t sgl_ascii_consolas15_bitmap[2900] = {
 /*   */
 
 
@@ -1044,7 +1044,7 @@ _const uint8_t sgl_ascii_consolas15_bitmap[2900] = {
 };
 
 
-_const sgl_font_table_t sgl_ascii_consolas15_tab[] = {
+static const sgl_font_table_t sgl_ascii_consolas15_tab[] = {
 
     {.bitmap_index = 0,	   .height = 0, .width = 8, .ofs_x = 0, .ofs_y = 15 },/*( )*/
     {.bitmap_index = 0,	   .height = 9, .width = 8, .ofs_x = 0, .ofs_y = 3 },/*(!)*/
@@ -1145,3 +1145,5 @@ _const sgl_font_table_t sgl_ascii_consolas15_tab[] = {
 };
 
 sgl_font_t consolas15 = { .bitmap = sgl_ascii_consolas15_bitmap, .table = sgl_ascii_consolas15_tab, .font_height = 15, .bpp = 4};
+
+#endif

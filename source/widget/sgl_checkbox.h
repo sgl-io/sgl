@@ -27,10 +27,10 @@
 #define __SGL_CHECKBOX_H__
 
 #include "../core/sgl_core.h"
-#include "../sgl.h"
-#include "../draw/sgl_draw_rect.h"
-#include "../draw/sgl_draw_circle.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef struct sgl_checkbox {
     sgl_obj_t   obj;
@@ -47,7 +47,11 @@ void sgl_checkbox_set_status(sgl_obj_t *obj, bool status);
 bool sgl_checkbox_get_status(sgl_obj_t *obj);
 void sgl_checkbox_set_font(sgl_obj_t *obj, sgl_font_t *font);
 void sgl_checkbox_set_text(sgl_obj_t *obj, const char* text);
-void sgl_checkbox_draw(sgl_obj_t *obj);
-void sgl_checkbox_event_cb(sgl_obj_t *obj);
+
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif //__SGL_CHECKBOX_H__

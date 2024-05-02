@@ -93,3 +93,23 @@ void sgl_draw_icon_transp_on_bg(sgl_surf_t *surf, int x, int y, sgl_color_t colo
         }
     }
 }
+
+
+void sgl_draw_icon_lines_on_bg(sgl_surf_t *surf, int x, int y, int lines_start, int lines, sgl_color_t color, sgl_icon_t *icon)
+{
+    int pos_x, pos_y;
+    const uint8_t *dot = icon->bitmap + lines_start*icon->width / 2;
+    for(int i = 0; i < lines; i++) {
+        for(int j = 0; j < icon->width; j +=2) {
+            if(*dot) {
+                pos_x = x + j;
+                pos_y = y + i;
+                sgl_draw_point(surf, x + j, y + i, 
+                                sgl_color_mixer(color, sgl_get_draw_buffer_color(surf, pos_x, pos_y), (((*dot)>>4)&0xF)*16));
+                sgl_draw_point(surf, x + j + 1, y + i, 
+                                sgl_color_mixer(color, sgl_get_draw_buffer_color(surf, pos_x + 1, pos_y), (((*dot))&0xF)*16));
+            }
+            dot ++;
+        }
+    }
+}

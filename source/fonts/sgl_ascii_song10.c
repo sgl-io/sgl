@@ -27,7 +27,8 @@
 #include "../draw/sgl_draw.h"
 #include "../draw/sgl_draw_font.h"
 
-_const uint8_t sgl_ascii_song10_bitmap[] = {
+#if(SGL_CONFIG_FONT_SONG10)
+static const uint8_t sgl_ascii_song10_bitmap[] = {
 /*   */
 
 /* ! */
@@ -908,7 +909,7 @@ _const uint8_t sgl_ascii_song10_bitmap[] = {
 };
 
 
-_const sgl_font_table_t sgl_ascii_song10_tab[] = {
+static const sgl_font_table_t sgl_ascii_song10_tab[] = {
     {.bitmap_index = 0,	   .height = 0,  .width = 6, .ofs_x = 0, .ofs_y = 10 },/*( )*/
     {.bitmap_index = 0,	   .height = 7,  .width = 6, .ofs_x = 0, .ofs_y = 2 },/*(!)*/
     {.bitmap_index = 21,   .height = 2,  .width = 6, .ofs_x = 0, .ofs_y = 1 },/*(")*/
@@ -1008,3 +1009,4 @@ _const sgl_font_table_t sgl_ascii_song10_tab[] = {
 };
 
 sgl_font_t song10 = { .bitmap = sgl_ascii_song10_bitmap, .table = sgl_ascii_song10_tab, .font_height = 10, .bpp = 4};
+#endif

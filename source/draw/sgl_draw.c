@@ -24,7 +24,6 @@
  */
 
 #include "./sgl_draw.h"
-#include "stdio.h"
 
 
 #if (SGL_CONFIG_MIXER_TYPE == 1)
@@ -203,8 +202,8 @@ void sgl_draw_obj_buffer_pick_img(sgl_surf_t *surf, sgl_obj_t *obj, sgl_img_t *i
     cherry += obj->pos.y * img->width + obj->pos.x;
 #if SGL_CONFIG_FRAMEBUFFER_MMAP
     sgl_color_t *pos = surf->fb + obj->pos.y*surf->size.w + obj->pos.x;
-    for(int i = 0; i < obj->size.h; i++) {
-        for(int j = 0; j < obj->size.w; j++) {
+    for(int i = 0; i <= obj->size.h; i++) {
+        for(int j = 0; j <= obj->size.w; j++) {
             pos[j] = cherry[j];
         }
         pos += surf->size.w;
@@ -306,67 +305,37 @@ int sgl_figure_circle_path(int16_t r, int16_t* path)
     return dx-1;
 }
 
+#if(SGL_CONFIG_TEXT_UTF8 == 1)
+
+int sgl_text_width(sgl_font_t *font, const char* text)
+{
+    int text_w = 0;
+    int ch_index;
+    uint32_t unicode = 0;
+    uint8_t *ptr = (uint8_t *)text;         
+    while(*ptr) {
+        ptr += sgl_utf8_to_unicode(ptr, &unicode);
+        ch_index = sgl_search_unicode_ch_index(font, unicode); 
+        text_w += font->table[ch_index].width;
+        text ++;
+    }
+    return text_w;
+}
+#else
 int sgl_text_width(sgl_font_t *font, const char* text)
 {
     int text_w = 0;
     while(*text) {
+ 
         text_w += font->table[(uint8_t)(*text) - 32].width;
         text ++;
     }
     return text_w;
 }
-
+#endif
 int sgl_text_height(sgl_font_t *font)
 {
     return font->font_height;
-}
-
-void sgl_draw_handler(sgl_obj_t *obj)
-{
-    switch(obj->obj_type) {
-        case SGL_OBJ_BUTTON: {
-            sgl_button_event_cb(obj);
-            break;
-        }
-        case SGL_OBJ_SWITCH: {
-            sgl_switch_event_cb(obj);
-            break;
-        }
-        case SGL_OBJ_LABEL: {
-            sgl_label_event_cb(obj);
-            break;
-        }
-        case SGL_OBJ_BATTERY: {
-            sgl_battery_draw(obj);
-            break;
-        }
-        case SGL_OBJ_CHECKBOX: {
-            sgl_checkbox_event_cb(obj);
-            break;
-        }
-        case SGL_OBJ_RADIOBUTTON: {
-            sgl_radiobtn_event_cb(obj);
-            break;
-        }
-        case SGL_OBJ_NUMBER: {
-            sgl_number_event_cb(obj);
-            break;
-        }
-        case SGL_OBJ_PROGRESSBAR: {
-            sgl_pgsbar_event_cb(obj);
-            break;
-        }
-        case SGL_OBJ_ARCBAR: {
-            sgl_arcbar_draw(obj);
-            break;
-        }
-        case SGL_OBJ_PIXELMAP: {
-            sgl_pixmap_draw(obj);
-            break;
-        }
-        
-        default: break;
-    }
 }
 
 sgl_color_t sgl_get_draw_buffer_color(sgl_surf_t *surf, int16_t x, int16_t y)
@@ -374,3 +343,35 @@ sgl_color_t sgl_get_draw_buffer_color(sgl_surf_t *surf, int16_t x, int16_t y)
     sgl_color_t *color = surf->fb;
     return color[y * surf->size.w + x];
 }
+
+
+/**
+* @brief Check if object drawing exceeds the size of the drawing cache
+*
+* @param obj  The object
+*
+* @return bool  true: valid, false: invalid
+*/
+bool sgl_draw_obj_valid(sgl_obj_t *obj)
+{
+#if SGL_CONFIG_FRAMEBUFFER_MMAP
+    return true;
+#else
+    int __buffer_size = sgl_get_device_panel()->buffer_size / sizeof(sgl_color_t);
+    if(obj->size.w * obj->size.h > __buffer_size)
+        return false;
+    else
+        return true;
+#endif
+}
+
+
+bool sgl_draw_circle_valid(uint16_t radius)
+{
+    int __buffer_size = sgl_get_device_panel()->buffer_size / sizeof(sgl_color_t);
+    if(radius * radius > __buffer_size)
+        return false;
+    else
+        return true;
+}
+

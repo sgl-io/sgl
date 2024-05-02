@@ -23,6 +23,8 @@ C_SOURCES =  \
 $(wildcard $(TARGET)/*.c)  \
 $(wildcard $(SGL_DIR)/*.c)  \
 $(wildcard $(SGL_DIR)/core/*.c)  \
+$(wildcard $(SGL_DIR)/libs/*.c)  \
+$(wildcard $(SGL_DIR)/libs/heap/*.c)  \
 $(wildcard $(SGL_DIR)/draw/*.c)  \
 $(wildcard $(SGL_DIR)/fonts/*.c)  \
 $(wildcard $(SGL_DIR)/widget/*.c)  \
@@ -40,6 +42,8 @@ C_INCLUDES =     \
 -Ilibsdl/include/SDL2   \
 -I$(SGL_DIR)    \
 -I$(SGL_DIR)/core    \
+-I$(SGL_DIR)/libs    \
+-I$(SGL_DIR)/libs/heap    \
 -I$(SGL_DIR)/draw  \
 -I$(SGL_DIR)/font   \
 -I$(SGL_DIR)/widget   \
@@ -80,7 +84,7 @@ endif
 
 # libraries
 #LIBS = -lc_nano -lm
-LDFLAGS = $(OPT)   $(LIB_DIR) $(LIB_OPT) $(LIBS) -Tsdl.lds
+LDFLAGS = $(OPT)   $(LIB_DIR) $(LIB_OPT) $(LIBS)
 
 # default action: build all
 all: $(TARGET).exe

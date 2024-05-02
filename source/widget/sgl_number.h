@@ -27,10 +27,7 @@
 #define __SGL_NUMBER_H__
 
 #include "../core/sgl_core.h"
-#include "../sgl.h"
-#include "../draw/sgl_draw_rect.h"
-#include "../draw/sgl_draw_circle.h"
-#include "../draw/sgl_draw_font.h"
+
 
 
 typedef struct sgl_number {
@@ -47,9 +44,6 @@ sgl_obj_t* sgl_number_create(sgl_obj_t* parent, double value);
 void sgl_number_set_font(sgl_obj_t* obj, sgl_font_t *font);
 void sgl_number_set_value(sgl_obj_t* obj, double value);
 void sgl_number_set_text_align(sgl_obj_t *obj, sgl_align_type_e align);
-void sgl_number_draw(sgl_obj_t* obj);
-void sgl_number_event_cb(sgl_obj_t *obj);
-
 
 #endif //__SGL_NUMBER_H__
 
